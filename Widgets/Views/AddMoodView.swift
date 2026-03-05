@@ -65,9 +65,6 @@ struct AddMoodView: View {
             }.padding(.top)
             saveBar
         }
-        
-        
-        .onAppear { print("AddMoodView appeared") }
         .autocorrectionDisabled()
         .textInputAutocapitalization(.never)
         .alert("Couldn't save mood", isPresented: $showError) {
@@ -286,7 +283,7 @@ struct AddMoodView: View {
                 labels: [label]
             )
 
-            SharedMoodCache.writeLatest(assetName: label.displayName, date: Date())
+            SharedMoodCache.writeLatest(assetName: label.displayName, date: Date(), color: label.level.color)
             WidgetCenter.shared.reloadTimelines(ofKind: "MoodWidget")
             dismiss()
             

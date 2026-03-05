@@ -36,7 +36,7 @@ struct HomeView: View {
 
                 if let latest = latestMood {
                     let assetName = latest.labels.first?.displayName ?? "Happy"
-                    SharedMoodCache.writeLatest(assetName: assetName, date: latest.startDate)
+                    SharedMoodCache.writeLatest(assetName: assetName, date: latest.startDate, color: latest.labels.first?.level.color ?? .green)
                     
                 }
             
@@ -68,9 +68,9 @@ struct HomeView: View {
     ]
 
     private let tools: [MoodToolItem] = [
-        .init(title: "Mood Boost", systemImage: "sparkles"),
-        .init(title: "Meditation", systemImage: "leaf.fill"),
-        .init(title: "Affirmation", systemImage: "quote.bubble")
+        .init(title: "Mood Boost", systemImage: "sparkles", path: .breathing ),
+        .init(title: "Breathe", systemImage: "leaf.fill", path: .breathing),
+        .init(title: "Affirmation", systemImage: "quote.bubble", path: .breathing)
     ]
 
     private let cardRadius: CGFloat = 22
@@ -148,7 +148,7 @@ struct HomeView: View {
     // MARK: Header (push instead of sheet)
 
     private var header: some View {
-        HStack {
+        HStack(spacing: 10) {
             Image("Logo")
                 .resizable()
                 .frame(width: 35, height: 35)
@@ -158,16 +158,23 @@ struct HomeView: View {
 
             Spacer()
 
-           
+            
             StreakPill()
                 .task {
                     await moodStore.refresh()
                 }
+            Button {
+                path.append(HomeRoute.settings)
+            } label: {
+                Image(systemName: "gearshape.fill")
+                    .font(Font.system(size: 20))
+                    .foregroundColor(.primary)
+            }
 
            
 
             
-        }
+        }.padding(10)
         
      
         
@@ -178,6 +185,7 @@ struct HomeView: View {
     private var currentMoodCard: some View {
         Button {
             path.append(HomeRoute.logMood)
+            router.openAddMood = true
         } label: {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 12) {
@@ -331,18 +339,11 @@ struct HomeView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .frame(height: 110)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(.white.opacity(0.12), lineWidth: 1)
-                    )
-                    .overlay(
-                        Text("Mini chart placeholder")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    )
+                CurrentWeekMoodBarGraph()
+                   
+                    .frame(height: 150)
+                    
+                    
 
                 Text("Best day: Sat • Low point: Wed afternoon")
                     .font(.subheadline)
@@ -448,7 +449,11 @@ struct HomeView: View {
                 GridItem(.flexible(), spacing: 10)
             ], spacing: 10) {
                 ForEach(tools) { tool in
-                    Button { } label: {
+                    Button {
+                        
+                        path.append(tool.path)
+                        
+                    } label: {
                         VStack(spacing: 8) {
                             Image(systemName: tool.systemImage)
                                 .font(.title3)

@@ -15,6 +15,7 @@ enum HomeRoute: Hashable {
     case profile
     case insights
     case friends
+    case breathing
 }
 
 // MARK: - App Tabs (custom glass tab bar)
@@ -102,6 +103,19 @@ struct RootShellView: View {
                         InsightsView(path: $path)
                     case .friends:
                         FriendsView(path: $path)
+                    case .breathing:
+                        BreathingView(path: $path)
+                    
+                    }
+                }
+                .onOpenURL { url in
+                    guard url.scheme == "moodwidget" else { return }
+
+                    // moodwidget://addMood
+                    if url.host == "addMood" {
+                        // optional: clear to root first so it always works predictably
+                        path = NavigationPath()
+                        path.append(HomeRoute.logMood)
                     }
                 }
             }

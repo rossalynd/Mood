@@ -6,6 +6,8 @@
 //
 
 import HealthKit
+import WidgetKit
+
 @available(iOS 26.0, *)
 @MainActor
 final class HealthKitMoodStore: ObservableObject {
@@ -21,15 +23,29 @@ final class HealthKitMoodStore: ObservableObject {
         try await store.requestAuthorization(toShare: [stateOfMindType], read: [stateOfMindType])
     }
 
+ 
+    
     func refresh() async {
             do {
                 let samples = try await fetchRecentMoods()
-                await MainActor.run {
-                    self.moods = samples
-                    self.streak = StreakCalculator.compute(from: samples)
+
+                let computed = StreakCalculator.compute(from: samples)
+                self.moods = samples
+                self.streak = computed
+
+                // ✅ Update shared cache for widget
+                if let latest = samples.first { // your query sorts descending, so first is newest
+                    let assetName = latest.labels.first?.displayName ?? "Happy"
+                    SharedMoodCache.writeLatest(assetName: assetName, date: latest.startDate, color: latest.labels.first?.level.color ?? .green)
                 }
+
+                SharedMoodCache.writeStreak(current: computed.current)
+
+                // ✅ Force widget refresh
+                WidgetCenter.shared.reloadAllTimelines()
+
             } catch {
-                // handle error
+                // handle error if you want
             }
         }
     
@@ -47,6 +63,7 @@ final class HealthKitMoodStore: ObservableObject {
             metadata: nil
         )
         try await store.save(sample)
+        await refresh()
     }
     
     func fetchRecentMoods(limit: Int = 365) async throws -> [HKStateOfMind] {
@@ -96,6 +113,7 @@ final class HealthKitMoodStore: ObservableObject {
                 }
             }
         }
+        await refresh()
     }
 
 

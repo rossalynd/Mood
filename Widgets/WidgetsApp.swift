@@ -7,12 +7,17 @@
 
 import SwiftUI
 import SwiftData
+import FirebaseCore
 
 @available(iOS 26.0, *)
 @main
 struct WidgetsApp: App {
     @StateObject private var moodStore = HealthKitMoodStore()
     @StateObject private var router = DeepLinkRouter()
+    
+    init() {
+            FirebaseApp.configure()
+        }
 
     var body: some Scene {
         WindowGroup {

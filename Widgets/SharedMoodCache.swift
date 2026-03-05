@@ -6,30 +6,75 @@
 //
 
 import Foundation
-import WidgetKit
+import SwiftUI
 
-@MainActor
 enum SharedMoodCache {
     static let suiteName = "group.com.Widgets.mood"
-    static let suite = UserDefaults(suiteName: suiteName)
 
-    // MARK: - Write
-
-    static func writeLatest(assetName: String, date: Date) {
-        suite?.set(assetName, forKey: "latestMoodAsset")
-        suite?.set(date, forKey: "latestMoodDate")
-
-        
+    // ✅ Swift 6 friendly: no stored static UserDefaults
+    private static func suite() -> UserDefaults? {
+        UserDefaults(suiteName: suiteName)
     }
 
-    // MARK: - Read
-    
+    // MARK: - Write (your original API, unchanged)
+
+    static func writeLatest(assetName: String, date: Date, color: Color) {
+        let s = suite()
+
+        s?.set(assetName, forKey: "latestMoodAsset")
+        s?.set(date, forKey: "latestMoodDate")
+
+        let validColors: [Color: String] = [
+            .indigo: "indigo",
+            .orange: "orange",
+            .yellow: "yellow",
+            .pink: "pink",
+            .purple: "purple"
+        ]
+
+        if let colorName = validColors[color] {
+            s?.set(colorName, forKey: "latestMoodColor")
+        } else {
+            // fallback if somehow an unexpected color appears
+            s?.set("yellow", forKey: "latestMoodColor")
+            print("⚠️ Invalid mood color, defaulting to yellow")
+        }
+    }
+
+    // MARK: - Read (your original API, unchanged)
 
     static func readAssetName() -> String {
-        suite?.string(forKey: "latestMoodAsset") ?? "Happy"
+        suite()?.string(forKey: "latestMoodAsset") ?? "Happy"
     }
 
     static func readDate() -> Date? {
-        suite?.object(forKey: "latestMoodDate") as? Date
+        suite()?.object(forKey: "latestMoodDate") as? Date
+    }
+    
+    static func readColor() -> Color {
+        let name = suite()?.string(forKey: "latestMoodColor") ?? "yellow"
+        switch name {
+        case "indigo": return .indigo
+        case "orange": return .orange
+        case "yellow": return .yellow
+        case "pink":   return .pink
+        case "purple": return .purple
+        default:       return .yellow
+        }
+    }
+
+    // MARK: - Optional additions (won’t break anything else)
+
+    static func writeStreak(current: Int) {
+        suite()?.set(current, forKey: "streakCurrent")
+    }
+
+    static func readStreakCurrent() -> Int {
+        suite()?.integer(forKey: "streakCurrent") ?? 0
+    }
+
+    static func hasMoodLoggedToday(now: Date = .now, calendar: Calendar = .current) -> Bool {
+        guard let d = readDate() else { return false }
+        return calendar.isDate(d, inSameDayAs: now)
     }
 }

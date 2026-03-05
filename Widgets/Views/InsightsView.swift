@@ -28,4 +28,14 @@ struct InsightsView: View {
             .overlay(alignment: .bottom) { Divider().opacity(0.25) }
         }
     }
+   
 }
+@available(iOS 26.0, *)
+#Preview {
+    @Previewable @State var path = NavigationPath()
+   
+    InsightsView(path: $path)
+        .environmentObject(DeepLinkRouter())
+      
+}
+

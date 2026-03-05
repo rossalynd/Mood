@@ -94,7 +94,7 @@ struct WatchHomeView: View {
 
             if let latest = latestMood {
                 let assetName = latest.labels.first?.displayName ?? "Happy"
-                SharedMoodCache.writeLatest(assetName: assetName, date: latest.startDate)
+                SharedMoodCache.writeLatest(assetName: assetName, date: latest.startDate, color: latest.labels.first?.level.color ?? .green)
             }
 
         } catch {

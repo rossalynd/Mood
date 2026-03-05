@@ -21,9 +21,11 @@ struct LiquidBackdrop: View {
             )
             Image("stars")
                 .resizable()
-                .frame(width: .infinity, height: .infinity)   // important
+                
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .ignoresSafeArea()
                 .opacity(0.05)
+                .clipped()
         }
     }
 }

@@ -12,6 +12,7 @@ import SwiftUI
 struct WidgetsTargetBundle: WidgetBundle {
     var body: some Widget {
         MoodWidget()
+        HomeMoodWidget()
         WidgetsTargetControl()
         WidgetsTargetLiveActivity()
     }

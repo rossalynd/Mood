@@ -17,7 +17,7 @@ struct StreakPill: View {
             Text("\(moodStore.streak.current)")
                 .font(.headline.weight(.semibold))
         }
-        .padding(.horizontal, 12)
+        
         .padding(.vertical, 8)
         
     }

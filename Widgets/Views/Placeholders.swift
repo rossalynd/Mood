@@ -20,6 +20,7 @@ struct MoodToolItem: Identifiable {
     let id = UUID()
     let title: String
     let systemImage: String
+    let path: HomeRoute
 }
 
 // MARK: - Placeholder “Full Screen” Push Views

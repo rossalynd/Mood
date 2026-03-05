@@ -43,14 +43,14 @@ struct Provider: TimelineProvider {
         MoodEntry(date: .now, assetName: "Happy")
     }
 
-    @MainActor func getSnapshot(in context: Context, completion: @escaping (MoodEntry) -> Void) {
+   func getSnapshot(in context: Context, completion: @escaping (MoodEntry) -> Void) {
         completion(MoodEntry(
             date: SharedMoodCache.readDate() ?? .now,
             assetName: SharedMoodCache.readAssetName()
         ))
     }
 
-    @MainActor func getTimeline(in context: Context, completion: @escaping (Timeline<MoodEntry>) -> Void) {
+     func getTimeline(in context: Context, completion: @escaping (Timeline<MoodEntry>) -> Void) {
         let entry = MoodEntry(
             date: SharedMoodCache.readDate() ?? .now,
             assetName: SharedMoodCache.readAssetName()
@@ -83,17 +83,20 @@ struct MoodWidgetView: View {
     private var content: some View {
         switch family {
         case .accessoryInline:
-           Image("\(entry.assetName)")
+            Image("\(entry.assetName)")
 
         case .accessoryCircular:
             ZStack() {
                 Circle()
-                    .fill( .white)
-                    .frame(width: 60, height: 60)
+                    .fill( .black)
+                    .opacity(0.7)
+                    .frame(width: 65, height: 65)
                 
                 Image(entry.assetName)
                     .resizable()
-                    .frame(width: 50, height: 50)
+                    .frame(width: 65, height: 65)
+                    .foregroundStyle(.white)
+                    
                  
                 
                 
