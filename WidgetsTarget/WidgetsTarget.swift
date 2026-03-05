@@ -43,14 +43,14 @@ struct Provider: TimelineProvider {
         MoodEntry(date: .now, assetName: "Happy")
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (MoodEntry) -> Void) {
+    @MainActor func getSnapshot(in context: Context, completion: @escaping (MoodEntry) -> Void) {
         completion(MoodEntry(
             date: SharedMoodCache.readDate() ?? .now,
             assetName: SharedMoodCache.readAssetName()
         ))
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<MoodEntry>) -> Void) {
+    @MainActor func getTimeline(in context: Context, completion: @escaping (Timeline<MoodEntry>) -> Void) {
         let entry = MoodEntry(
             date: SharedMoodCache.readDate() ?? .now,
             assetName: SharedMoodCache.readAssetName()

@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 
+@available(iOS 26.0, *)
 @main
 struct WidgetsApp: App {
     @StateObject private var moodStore = HealthKitMoodStore()
@@ -15,7 +16,7 @@ struct WidgetsApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+           RootShellView()
                 .environmentObject(moodStore)
                 .environmentObject(router)
                 .onOpenURL { url in

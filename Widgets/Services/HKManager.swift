@@ -6,23 +6,37 @@
 //
 
 import HealthKit
-
+@available(iOS 26.0, *)
 @MainActor
 final class HealthKitMoodStore: ObservableObject {
     private let store = HKHealthStore()
+    @Published private(set) var moods: [HKStateOfMind] = []
+    @Published private(set) var streak: MoodStreak = .init(current: 0, longest: 0, lastCountedDay: nil)
 
     func requestAuth() async throws {
         guard HKHealthStore.isHealthDataAvailable() else { return }
-        guard #available(iOS 18.0, *) else { return }
+        
 
         let stateOfMindType = HKObjectType.stateOfMindType() // iOS 18+
         try await store.requestAuthorization(toShare: [stateOfMindType], read: [stateOfMindType])
     }
 
+    func refresh() async {
+            do {
+                let samples = try await fetchRecentMoods()
+                await MainActor.run {
+                    self.moods = samples
+                    self.streak = StreakCalculator.compute(from: samples)
+                }
+            } catch {
+                // handle error
+            }
+        }
+    
     func saveMood(valence: Double,
                   kind: HKStateOfMind.Kind,
                   labels: [HKStateOfMind.Label] = []) async throws {
-        guard #available(iOS 18.0, *) else { return }
+        
 
         let sample = HKStateOfMind(
             date: Date(),
@@ -35,8 +49,8 @@ final class HealthKitMoodStore: ObservableObject {
         try await store.save(sample)
     }
     
-    func fetchRecentMoods(limit: Int = 30) async throws -> [HKStateOfMind] {
-           guard #available(iOS 18.0, *) else { return [] }
+    func fetchRecentMoods(limit: Int = 365) async throws -> [HKStateOfMind] {
+           
 
            try await requestAuth()
 
@@ -64,7 +78,7 @@ final class HealthKitMoodStore: ObservableObject {
            }
        }
     func deleteMood(_ mood: HKStateOfMind) async throws {
-        guard #available(iOS 18.0, *) else { return }
+        
         try await requestAuth()
 
         try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in

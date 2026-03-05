@@ -9,7 +9,9 @@ import SwiftUI
 import HealthKit
 import WidgetKit
 
+@available(iOS 26.0, *)
 struct ContentView: View {
+   
     @EnvironmentObject var moodStore: HealthKitMoodStore
     @EnvironmentObject var router: DeepLinkRouter
 
@@ -91,7 +93,7 @@ struct ContentView: View {
                 }
             }
             .navigationDestination(isPresented: $router.openAddMood) {
-                if #available(iOS 18.0, *) {
+                if #available(iOS 26.0, *) {
                     AddMoodView()
                         .environmentObject(moodStore)
                 } else {
@@ -144,15 +146,16 @@ struct ContentView: View {
         defer { isLoading = false }
 
         do {
-            if #available(iOS 18.0, *) {
+            
                 moods = try await moodStore.fetchRecentMoods(limit: 50)
 
                 if let latest = moods.first {
                     let assetName = latest.labels.first?.displayName ?? "Happy"
                     SharedMoodCache.writeLatest(assetName: assetName, date: latest.startDate)
                     WidgetCenter.shared.reloadAllTimelines()
+                    
                 }
-            }
+            
         } catch {
             errorMessage = error.localizedDescription
             showError = true
@@ -175,7 +178,7 @@ struct ContentView: View {
 
 // MARK: - Big latest card
 
-@available(iOS 18.0, *)
+@available(iOS 26.0, *)
 private struct LatestMoodCard: View {
     let mood: HKStateOfMind
 
@@ -228,7 +231,7 @@ private struct LatestMoodCard: View {
 
 // MARK: - Smaller row
 
-@available(iOS 18.0, *)
+@available(iOS 26.0, *)
 private struct MoodRow: View {
     let mood: HKStateOfMind
 
@@ -264,8 +267,3 @@ private struct MoodRow: View {
     }
 }
 
-#Preview {
-    ContentView()
-        .environmentObject(HealthKitMoodStore())
-        .environmentObject(DeepLinkRouter())
-}

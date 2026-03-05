@@ -7,12 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DC22BB512F57B3F600CFC1CD /* InstaMood Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = DC22BB312F57B3F400CFC1CD /* InstaMood Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DC9EB28D2F41661C009A05C1 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9EB28C2F41661C009A05C1 /* WidgetKit.framework */; };
 		DC9EB28F2F41661C009A05C1 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9EB28E2F41661C009A05C1 /* SwiftUI.framework */; };
 		DC9EB2A02F41661D009A05C1 /* WidgetsTargetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DC9EB28A2F41661B009A05C1 /* WidgetsTargetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		DC22BB3E2F57B3F600CFC1CD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC9EB24F2F4165F1009A05C1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DC22BB302F57B3F400CFC1CD;
+			remoteInfo = "InstaMood Watch App";
+		};
+		DC22BB482F57B3F600CFC1CD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC9EB24F2F4165F1009A05C1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DC22BB302F57B3F400CFC1CD;
+			remoteInfo = "InstaMood Watch App";
+		};
+		DC22BB4F2F57B3F600CFC1CD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC9EB24F2F4165F1009A05C1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DC22BB302F57B3F400CFC1CD;
+			remoteInfo = "InstaMood Watch App";
+		};
 		DC9EB2692F4165F3009A05C1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = DC9EB24F2F4165F1009A05C1 /* Project object */;
@@ -37,6 +59,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		DC22BB552F57B3F600CFC1CD /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				DC22BB512F57B3F600CFC1CD /* InstaMood Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DC9EB2A52F41661D009A05C1 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -51,6 +84,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DC22BB312F57B3F400CFC1CD /* InstaMood Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "InstaMood Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC22BB3D2F57B3F600CFC1CD /* InstaMood Watch AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "InstaMood Watch AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC22BB472F57B3F600CFC1CD /* InstaMood Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "InstaMood Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC9EB2572F4165F1009A05C1 /* Widgets.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Widgets.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC9EB2682F4165F3009A05C1 /* WidgetsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WidgetsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC9EB2722F4165F3009A05C1 /* WidgetsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WidgetsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -61,6 +97,15 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		DC4CEB4B2F592F9D00E676EF /* Exceptions for "Widgets" folder in "InstaMood Watch App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Models/Mood/MoodData.swift,
+				Services/HKManager.swift,
+				SharedMoodCache.swift,
+			);
+			target = DC22BB302F57B3F400CFC1CD /* InstaMood Watch App */;
+		};
 		DC9EB27A2F4165F3009A05C1 /* Exceptions for "Widgets" folder in "Widgets" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -86,11 +131,27 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		DC22BB322F57B3F400CFC1CD /* InstaMood Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "InstaMood Watch App";
+			sourceTree = "<group>";
+		};
+		DC22BB402F57B3F600CFC1CD /* InstaMood Watch AppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "InstaMood Watch AppTests";
+			sourceTree = "<group>";
+		};
+		DC22BB4A2F57B3F600CFC1CD /* InstaMood Watch AppUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "InstaMood Watch AppUITests";
+			sourceTree = "<group>";
+		};
 		DC9EB2592F4165F1009A05C1 /* Widgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				DC9EB27A2F4165F3009A05C1 /* Exceptions for "Widgets" folder in "Widgets" target */,
 				DC9EB2B42F419870009A05C1 /* Exceptions for "Widgets" folder in "WidgetsTargetExtension" target */,
+				DC4CEB4B2F592F9D00E676EF /* Exceptions for "Widgets" folder in "InstaMood Watch App" target */,
 			);
 			path = Widgets;
 			sourceTree = "<group>";
@@ -116,6 +177,27 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		DC22BB2E2F57B3F400CFC1CD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC22BB3A2F57B3F600CFC1CD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC22BB442F57B3F600CFC1CD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DC9EB2542F4165F1009A05C1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -157,6 +239,9 @@
 				DC9EB26B2F4165F3009A05C1 /* WidgetsTests */,
 				DC9EB2752F4165F3009A05C1 /* WidgetsUITests */,
 				DC9EB2902F41661C009A05C1 /* WidgetsTarget */,
+				DC22BB322F57B3F400CFC1CD /* InstaMood Watch App */,
+				DC22BB402F57B3F600CFC1CD /* InstaMood Watch AppTests */,
+				DC22BB4A2F57B3F600CFC1CD /* InstaMood Watch AppUITests */,
 				DC9EB28B2F41661B009A05C1 /* Frameworks */,
 				DC9EB2582F4165F1009A05C1 /* Products */,
 			);
@@ -169,6 +254,9 @@
 				DC9EB2682F4165F3009A05C1 /* WidgetsTests.xctest */,
 				DC9EB2722F4165F3009A05C1 /* WidgetsUITests.xctest */,
 				DC9EB28A2F41661B009A05C1 /* WidgetsTargetExtension.appex */,
+				DC22BB312F57B3F400CFC1CD /* InstaMood Watch App.app */,
+				DC22BB3D2F57B3F600CFC1CD /* InstaMood Watch AppTests.xctest */,
+				DC22BB472F57B3F600CFC1CD /* InstaMood Watch AppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -185,6 +273,74 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		DC22BB302F57B3F400CFC1CD /* InstaMood Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC22BB522F57B3F600CFC1CD /* Build configuration list for PBXNativeTarget "InstaMood Watch App" */;
+			buildPhases = (
+				DC22BB2D2F57B3F400CFC1CD /* Sources */,
+				DC22BB2E2F57B3F400CFC1CD /* Frameworks */,
+				DC22BB2F2F57B3F400CFC1CD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				DC22BB322F57B3F400CFC1CD /* InstaMood Watch App */,
+			);
+			name = "InstaMood Watch App";
+			packageProductDependencies = (
+			);
+			productName = "InstaMood Watch App";
+			productReference = DC22BB312F57B3F400CFC1CD /* InstaMood Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DC22BB3C2F57B3F600CFC1CD /* InstaMood Watch AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC22BB562F57B3F600CFC1CD /* Build configuration list for PBXNativeTarget "InstaMood Watch AppTests" */;
+			buildPhases = (
+				DC22BB392F57B3F600CFC1CD /* Sources */,
+				DC22BB3A2F57B3F600CFC1CD /* Frameworks */,
+				DC22BB3B2F57B3F600CFC1CD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DC22BB3F2F57B3F600CFC1CD /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				DC22BB402F57B3F600CFC1CD /* InstaMood Watch AppTests */,
+			);
+			name = "InstaMood Watch AppTests";
+			packageProductDependencies = (
+			);
+			productName = "InstaMood Watch AppTests";
+			productReference = DC22BB3D2F57B3F600CFC1CD /* InstaMood Watch AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		DC22BB462F57B3F600CFC1CD /* InstaMood Watch AppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC22BB592F57B3F600CFC1CD /* Build configuration list for PBXNativeTarget "InstaMood Watch AppUITests" */;
+			buildPhases = (
+				DC22BB432F57B3F600CFC1CD /* Sources */,
+				DC22BB442F57B3F600CFC1CD /* Frameworks */,
+				DC22BB452F57B3F600CFC1CD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DC22BB492F57B3F600CFC1CD /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				DC22BB4A2F57B3F600CFC1CD /* InstaMood Watch AppUITests */,
+			);
+			name = "InstaMood Watch AppUITests";
+			packageProductDependencies = (
+			);
+			productName = "InstaMood Watch AppUITests";
+			productReference = DC22BB472F57B3F600CFC1CD /* InstaMood Watch AppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		DC9EB2562F4165F1009A05C1 /* Widgets */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = DC9EB27B2F4165F3009A05C1 /* Build configuration list for PBXNativeTarget "Widgets" */;
@@ -193,11 +349,13 @@
 				DC9EB2542F4165F1009A05C1 /* Frameworks */,
 				DC9EB2552F4165F1009A05C1 /* Resources */,
 				DC9EB2A52F41661D009A05C1 /* Embed Foundation Extensions */,
+				DC22BB552F57B3F600CFC1CD /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				DC9EB29F2F41661D009A05C1 /* PBXTargetDependency */,
+				DC22BB502F57B3F600CFC1CD /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				DC9EB2592F4165F1009A05C1 /* Widgets */,
@@ -285,8 +443,19 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1640;
-				LastUpgradeCheck = 1640;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
+					DC22BB302F57B3F400CFC1CD = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					DC22BB3C2F57B3F600CFC1CD = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = DC22BB302F57B3F400CFC1CD;
+					};
+					DC22BB462F57B3F600CFC1CD = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = DC22BB302F57B3F400CFC1CD;
+					};
 					DC9EB2562F4165F1009A05C1 = {
 						CreatedOnToolsVersion = 16.4;
 					};
@@ -321,11 +490,35 @@
 				DC9EB2672F4165F3009A05C1 /* WidgetsTests */,
 				DC9EB2712F4165F3009A05C1 /* WidgetsUITests */,
 				DC9EB2892F41661B009A05C1 /* WidgetsTargetExtension */,
+				DC22BB302F57B3F400CFC1CD /* InstaMood Watch App */,
+				DC22BB3C2F57B3F600CFC1CD /* InstaMood Watch AppTests */,
+				DC22BB462F57B3F600CFC1CD /* InstaMood Watch AppUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		DC22BB2F2F57B3F400CFC1CD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC22BB3B2F57B3F600CFC1CD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC22BB452F57B3F600CFC1CD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DC9EB2552F4165F1009A05C1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -357,6 +550,27 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		DC22BB2D2F57B3F400CFC1CD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC22BB392F57B3F600CFC1CD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC22BB432F57B3F600CFC1CD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DC9EB2532F4165F1009A05C1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -388,6 +602,21 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		DC22BB3F2F57B3F600CFC1CD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DC22BB302F57B3F400CFC1CD /* InstaMood Watch App */;
+			targetProxy = DC22BB3E2F57B3F600CFC1CD /* PBXContainerItemProxy */;
+		};
+		DC22BB492F57B3F600CFC1CD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DC22BB302F57B3F400CFC1CD /* InstaMood Watch App */;
+			targetProxy = DC22BB482F57B3F600CFC1CD /* PBXContainerItemProxy */;
+		};
+		DC22BB502F57B3F600CFC1CD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DC22BB302F57B3F400CFC1CD /* InstaMood Watch App */;
+			targetProxy = DC22BB4F2F57B3F600CFC1CD /* PBXContainerItemProxy */;
+		};
 		DC9EB26A2F4165F3009A05C1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = DC9EB2562F4165F1009A05C1 /* Widgets */;
@@ -406,6 +635,146 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		DC22BB532F57B3F600CFC1CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BC4WK26R2R;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = InstaMood;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "InstaMood uses HealthKit to read and write your State of Mind entries.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "InstaMood uses HealthKit to read and write your State of Mind entries.";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.rosieomarrow.Widgets;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rosieomarrow.Widgets.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Debug;
+		};
+		DC22BB542F57B3F600CFC1CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BC4WK26R2R;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = InstaMood;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "InstaMood uses HealthKit to read and write your State of Mind entries.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "InstaMood uses HealthKit to read and write your State of Mind entries.";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.rosieomarrow.Widgets;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rosieomarrow.Widgets.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Release;
+		};
+		DC22BB572F57B3F600CFC1CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BC4WK26R2R;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.rosieomarrow.InstaMood-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/InstaMood Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/InstaMood Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Debug;
+		};
+		DC22BB582F57B3F600CFC1CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BC4WK26R2R;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.rosieomarrow.InstaMood-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/InstaMood Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/InstaMood Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Release;
+		};
+		DC22BB5A2F57B3F600CFC1CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BC4WK26R2R;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.rosieomarrow.InstaMood-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "InstaMood Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Debug;
+		};
+		DC22BB5B2F57B3F600CFC1CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BC4WK26R2R;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.rosieomarrow.InstaMood-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "InstaMood Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Release;
+		};
 		DC9EB27C2F4165F3009A05C1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -415,10 +784,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BC4WK26R2R;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Widgets/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Mood;
+				INFOPLIST_KEY_CFBundleDisplayName = InstaMood;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your mood from Health to display your recent mood.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app saves your mood to the Health app.";
@@ -426,6 +797,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -433,9 +805,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rosieomarrow.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -448,10 +824,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BC4WK26R2R;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Widgets/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Mood;
+				INFOPLIST_KEY_CFBundleDisplayName = InstaMood;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your mood from Health to display your recent mood.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app saves your mood to the Health app.";
@@ -459,6 +837,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -466,9 +845,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rosieomarrow.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -525,12 +908,13 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -583,11 +967,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -687,9 +1072,13 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.rosieomarrow.Widgets.WidgetsTarget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -715,15 +1104,46 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.rosieomarrow.Widgets.WidgetsTarget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		DC22BB522F57B3F600CFC1CD /* Build configuration list for PBXNativeTarget "InstaMood Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC22BB532F57B3F600CFC1CD /* Debug */,
+				DC22BB542F57B3F600CFC1CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC22BB562F57B3F600CFC1CD /* Build configuration list for PBXNativeTarget "InstaMood Watch AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC22BB572F57B3F600CFC1CD /* Debug */,
+				DC22BB582F57B3F600CFC1CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC22BB592F57B3F600CFC1CD /* Build configuration list for PBXNativeTarget "InstaMood Watch AppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC22BB5A2F57B3F600CFC1CD /* Debug */,
+				DC22BB5B2F57B3F600CFC1CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		DC9EB2522F4165F1009A05C1 /* Build configuration list for PBXProject "Widgets" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

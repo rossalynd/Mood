@@ -1,204 +1,25 @@
-import SwiftUI
-import HealthKit
-import WidgetKit
-
-@available(iOS 18.0, *)
-struct AddMoodView: View {
-    @EnvironmentObject var moodStore: HealthKitMoodStore
-    @Environment(\.dismiss) private var dismiss
-
-    // Selection
-    @State private var selectedLabel: HKStateOfMind.Label? = nil
-    @State private var kind: HKStateOfMind.Kind = .momentaryEmotion
-
-    // UI state
-    @State private var query: String = ""
-    @State private var sort: MoodSort = .byLevel
-    @State private var errorMessage: String?
-    @State private var showError = false
-    @State private var isSaving = false
-    
-    private let cellHeight: CGFloat = 70   // tweak if needed
-    private let gridSpacing: CGFloat = 25
-
-    private var fourRowHeight: CGFloat {
-        (cellHeight * 4) + (gridSpacing * 3)
-    }
-
-
-    private let columns: [GridItem] = Array(repeating: GridItem(.flexible(), spacing: 2), count: 4)
-
-    var body: some View {
-        Form {
-            Section {
-                Picker("Type", selection: $kind) {
-                    Text("Momentary Emotion").tag(HKStateOfMind.Kind.momentaryEmotion)
-                    Text("Daily Mood").tag(HKStateOfMind.Kind.dailyMood)
-                }
-                .pickerStyle(.segmented)
-
-                Picker("Sort", selection: $sort) {
-                    Text("Level").tag(MoodSort.byLevel)
-                    Text("A–Z").tag(MoodSort.alphabetical)
-                }
-                .pickerStyle(.segmented)
-            }
-
-            if sort == .byLevel {
-                ForEach(MoodLevel.sortedDescending, id: \.self) { level in
-                    let sectionMoods = moodsForLevel(level)
-
-                    if !sectionMoods.isEmpty {
-                        Section(level.sectionTitle) {
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                LazyHStack(spacing: 14) {
-                                    ForEach(sectionMoods) { mood in
-                                        MoodCell(mood: mood, isSelected: mood.label == selectedLabel)
-                                            .frame(width: 70)
-                                            .onTapGesture { selectedLabel = mood.label }
-                                            .accessibilityLabel(mood.displayName)
-                                            .accessibilityHint("Select mood")
-                                    }
-                                }
-                                .padding(.vertical, 0)
-                            }
-                        }
-                    }
-                }
-            } else {
-                Section {
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: gridSpacing) {
-                            ForEach(filteredAlphabeticalMoods) { mood in
-                                MoodCell(mood: mood, isSelected: mood.label == selectedLabel)
-                                    .onTapGesture { selectedLabel = mood.label }
-                                    .accessibilityLabel(mood.displayName)
-                                    .accessibilityHint("Select mood")
-                            }
-                        }
-                        .padding(.vertical, 0)
-                    }
-                    .frame(height: fourRowHeight)
-                }
-
-            }
-
-            
-        }
-        .navigationTitle("Add Mood")
-        .searchable(text: $query,
-                    placement: .navigationBarDrawer(displayMode: .always),
-                    prompt: "Search moods")
-        .autocorrectionDisabled()
-        .textInputAutocapitalization(.never)
-        .alert("Couldn't save mood", isPresented: $showError) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(errorMessage ?? "Unknown error")
-        }
-        .safeAreaInset(edge: .bottom) {
-            saveBar
-        }
-
-        
-        
-
-    }
-    private var saveBar: some View {
-        VStack(spacing: 0) {
-            Divider()
-
-            Button {
-                Task { await save() }
-            } label: {
-                Group {
-                    if isSaving {
-                        ProgressView()
-                    } else {
-                        Text("Save")
-                            .fontWeight(.semibold)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(isSaving || selectedLabel == nil)
-           
-            .padding(20)
-            
-            .background(.ultraThinMaterial)
-        }
-    }
-    // MARK: - Data
-
-    private var allMoodItems: [MoodItem] {
-        AppleMoodLabels.all.map { MoodItem(label: $0) }
-    }
-
-    private var trimmedQuery: String {
-        query.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    private var filteredMoodItems: [MoodItem] {
-        guard !trimmedQuery.isEmpty else { return allMoodItems }
-        let q = trimmedQuery.lowercased()
-        return allMoodItems.filter { $0.displayName.lowercased().contains(q) }
-    }
-
-    private func moodsForLevel(_ level: MoodLevel) -> [MoodItem] {
-        filteredMoodItems
-            .filter { $0.level == level }
-            .sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
-    }
-
-    private var filteredAlphabeticalMoods: [MoodItem] {
-        filteredMoodItems.sorted {
-            $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
-        }
-    }
-
-    // MARK: - Save
-
-    private func save() async {
-        guard let label = selectedLabel else { return }
-        isSaving = true
-        defer { isSaving = false }
-
-        do {
-            try await moodStore.requestAuth()
-            try await moodStore.saveMood(
-                valence: label.defaultValence,
-                kind: kind,
-                labels: [label]
-            )
-            SharedMoodCache.writeLatest(assetName: label.displayName, date: Date())
-
-                   // ✅ Tell WidgetKit to refresh
-                
-            SharedMoodCache.writeLatest(assetName: label.displayName, date: Date())
-            WidgetCenter.shared.reloadTimelines(ofKind: "MoodWidget")
-            dismiss()
-        } catch {
-            errorMessage = error.localizedDescription
-            showError = true
-            print("Save failed:", error)
-        }
-    }
-}
+//
+//  MoodData.swift
+//  Widgets
+//
+//  Created by Rosie on 3/4/26.
+//
 
 // MARK: - Sort Mode
+import Foundation
+import SwiftUI
+import HealthKit
 
-@available(iOS 18.0, *)
-private enum MoodSort: Hashable {
+@available(iOS 26.0, *)
+enum MoodSort: Hashable {
     case byLevel
     case alphabetical
 }
 
 // MARK: - Mood Item + Cell (ZStack + circle + label chip)
 
-@available(iOS 18.0, *)
-private struct MoodItem: Identifiable, Hashable {
+@available(iOS 26.0, *)
+struct MoodItem: Identifiable, Hashable {
     let label: HKStateOfMind.Label
     var id: Int { label.rawValue }
 
@@ -207,8 +28,8 @@ private struct MoodItem: Identifiable, Hashable {
     var level: MoodLevel { label.level }
 }
 
-@available(iOS 18.0, *)
-private struct MoodCell: View {
+@available(iOS 26.0, *)
+struct MoodCell: View {
     let mood: MoodItem
     let isSelected: Bool
 
@@ -258,7 +79,7 @@ private struct MoodCell: View {
 
 // MARK: - Labels list (Apple-defined)
 
-@available(iOS 18.0, *)
+@available(iOS 26.0, *)
 struct AppleMoodLabels {
     static let all: [HKStateOfMind.Label] = [
         .amazed, .amused, .angry, .annoyed, .anxious, .ashamed, .brave, .calm, .confident,
@@ -271,7 +92,7 @@ struct AppleMoodLabels {
 
 // MARK: - 5-level model + mappings (name / emoji / level / color / valence)
 
-@available(iOS 18.0, *)
+@available(iOS 26.0, *)
 enum MoodLevel: Int, Hashable, CaseIterable {
     case veryNegative = 1
     case negative = 2
@@ -306,7 +127,7 @@ enum MoodLevel: Int, Hashable, CaseIterable {
     }
 }
 
-@available(iOS 18.0, *)
+@available(iOS 26.0, *)
 extension HKStateOfMind.Label {
 
     var displayName: String {
@@ -433,15 +254,32 @@ extension HKStateOfMind.Label {
     }
 }
 
-// MARK: - Preview
+enum MoodPrivacy: String, CaseIterable, Codable, Identifiable {
+    case `private`
+    case friends
+    case `public`
 
-#Preview {
-    NavigationStack {
-        if #available(iOS 18.0, *) {
-            AddMoodView()
-                .environmentObject(HealthKitMoodStore())
-        } else {
-            Text("Requires iOS 18+")
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .private:
+            return "Private"
+        case .friends:
+            return "Friends"
+        case .public:
+            return "Public"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .private:
+            return "lock.fill"
+        case .friends:
+            return "person.2.fill"
+        case .public:
+            return "globe"
         }
     }
 }

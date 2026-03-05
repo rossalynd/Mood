@@ -8,6 +8,7 @@
 import Foundation
 import WidgetKit
 
+@MainActor
 enum SharedMoodCache {
     static let suiteName = "group.com.Widgets.mood"
     static let suite = UserDefaults(suiteName: suiteName)

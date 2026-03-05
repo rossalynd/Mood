@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import HealthKit
 
-@available(iOS 18.0, *)
+@available(iOS 26.0, *)
 struct RecentMoodsView: View {
     @EnvironmentObject var moodStore: HealthKitMoodStore
 
@@ -57,8 +57,7 @@ struct RecentMoodsView: View {
     }
 }
 
-@available(iOS 18.0, *)
-private struct MoodEntryRow: View {
+@available(iOS 26.0, *)private struct MoodEntryRow: View {
     let mood: HKStateOfMind
 
     private var primaryLabel: HKStateOfMind.Label? { mood.labels.first }
