@@ -15,25 +15,20 @@ struct WatchMoodPicker: View {
 
     var onSaved: () -> Void
 
-    private let quickMoods: [HKStateOfMind.Label] = [
-        .happy,
-        .calm,
-        .content,
-        .excited,
-        .indifferent,
-        .drained,
-        .anxious,
-        .stressed,
-        .sad,
-        .angry
-    ]
+    private let quickMoods = AppleMoodLabels.all
+        .filter { $0.level == .veryPositive || $0.level == .veryNegative }
+    
 
     var body: some View {
 
         List {
 
-            ForEach(quickMoods, id: \.self) { label in
-
+            ForEach(
+                AppleMoodLabels.all
+                    .sorted { $0.level.sortRank > $1.level.sortRank },
+                id: \.self
+            ) { label in
+                
                 Button {
 
                     Task {
@@ -50,18 +45,27 @@ struct WatchMoodPicker: View {
 
                 } label: {
 
-                    HStack {
+                    HStack(spacing: 10) {
 
                         Image(label.displayName)
-                            .frame(width: 24)
+                            .resizable()
+                            .frame(width: 50, height: 50)
+                            
+                            
+                            .foregroundStyle(label.level.color)
 
                         Text(label.displayName)
 
                         Spacer()
                     }
                 }
+                
             }
         }
         .navigationTitle("Mood")
     }
+}
+
+#Preview {
+    WatchMoodPicker(onSaved: { })
 }

@@ -100,9 +100,13 @@
 		DC4CEB4B2F592F9D00E676EF /* Exceptions for "Widgets" folder in "InstaMood Watch App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Assets.xcassets,
+				Extensions/LiquidGlassExtension.swift,
+				Features/MoodStreak.swift,
 				Models/Mood/MoodData.swift,
 				Services/HKManager.swift,
 				SharedMoodCache.swift,
+				UIComponents/LiquidBackdrop.swift,
 			);
 			target = DC22BB302F57B3F400CFC1CD /* InstaMood Watch App */;
 		};
@@ -640,12 +644,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "InstaMood Watch App/InstaMood Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BC4WK26R2R;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = InstaMood;
+				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "InstaMood uses HealthKit to read and write your State of Mind entries.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "InstaMood uses HealthKit to read and write your State of Mind entries.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "InstaMood uses HealthKit to read and write your State of Mind entries.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
@@ -671,12 +677,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "InstaMood Watch App/InstaMood Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BC4WK26R2R;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = InstaMood;
+				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "InstaMood uses HealthKit to read and write your State of Mind entries.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "InstaMood uses HealthKit to read and write your State of Mind entries.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "InstaMood uses HealthKit to read and write your State of Mind entries.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
