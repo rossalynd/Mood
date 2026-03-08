@@ -94,8 +94,9 @@ struct MoodWidgetView: View {
                 
                 Image(entry.assetName)
                     .resizable()
-                    .frame(width: 65, height: 65)
+                    .frame(width: 55, height: 55)
                     .foregroundStyle(.white)
+                    .clipped()
                     
                  
                 

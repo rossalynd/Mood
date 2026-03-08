@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "Drained.png",
+      "filename" : "019-sleeping.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
@@ -19,6 +19,8 @@
     "version" : 1
   },
   "properties" : {
+    "compression-type" : "automatic",
+    "preserves-vector-representation" : true,
     "template-rendering-intent" : "template"
   }
 }

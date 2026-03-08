@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "Grateful.png",
+      "filename" : "024-smile-2.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
@@ -19,6 +19,8 @@
     "version" : 1
   },
   "properties" : {
+    "compression-type" : "automatic",
+    "preserves-vector-representation" : true,
     "template-rendering-intent" : "template"
   }
 }

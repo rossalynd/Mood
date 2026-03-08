@@ -12,7 +12,7 @@ import SwiftUI
 // MARK: - Placeholder Types
 struct QuickMood: Identifiable {
     let id = UUID()
-    let emoji: String
+    let assetName: String
     let label: String
 }
 
@@ -40,3 +40,4 @@ struct PlaceholderPushView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 }
+

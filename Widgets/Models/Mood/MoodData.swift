@@ -104,10 +104,10 @@ enum MoodLevel: Int, Hashable, CaseIterable {
 
     var color: Color {
         switch self {
-        case .veryNegative: return .indigo
+        case .veryNegative: return .pink
         case .negative:     return .orange
         case .neutral:      return .yellow
-        case .positive:     return .pink
+        case .positive:     return .indigo
         case .veryPositive: return .purple
         }
     }

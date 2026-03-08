@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+
 // MARK: - Home Routes (push full-screen inside the same NavigationStack)
 enum HomeRoute: Hashable {
     case logMood
@@ -97,6 +98,7 @@ struct RootShellView: View {
                         AddMoodView()
                     case .settings:
                         SettingsView()
+                           
                     case .profile:
                         ProfileView(path: $path)
                     case .insights:
@@ -150,4 +152,5 @@ struct RootShellView: View {
     RootShellView()
         .environmentObject(HealthKitMoodStore())
         .environmentObject(DeepLinkRouter())
+    
 }

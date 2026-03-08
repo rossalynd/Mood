@@ -88,11 +88,15 @@ struct HomeMoodWidgetView: View {
                     if entry.hasToday {
                         
                         Circle()
-                            .fill(entry.color)
-                            .frame(width: 120, height: 120)
+                            .fill(.black)
+                            .frame(width: 140, height: 140)
+                            .opacity(0.3)
+                            
                         Image(entry.assetName)
                             .resizable()
-                            .frame(width: 180, height: 180)
+                            .frame(width: 120, height: 120)
+                            .foregroundStyle(entry.color)
+                            .opacity(0.9)
                         
                     } else {
                         

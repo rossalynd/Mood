@@ -1,5 +1,6 @@
 import SwiftUI
 import HealthKit
+import WidgetKit
 
 @available(iOS 26.0, *)
 struct HomeView: View {
@@ -7,6 +8,7 @@ struct HomeView: View {
     @Binding var selectedTab: MoodTab
     @EnvironmentObject var moodStore: HealthKitMoodStore
     @EnvironmentObject var router: DeepLinkRouter
+
     
     @State private var moods: [HKStateOfMind] = []
     @Binding var showAddMood: Bool
@@ -58,14 +60,18 @@ struct HomeView: View {
     @State private var lastLoggedText = "Last logged: 2h ago"
     @State private var notePreview: String? = "Had a great workout…"
 
-    private let quickLogMoods: [QuickMood] = [
-        .init(emoji: "🙂", label: "Happy"),
-        .init(emoji: "😌", label: "Calm"),
-        .init(emoji: "😔", label: "Sad"),
-        .init(emoji: "😡", label: "Angry"),
-        .init(emoji: "😴", label: "Tired"),
-        .init(emoji: "🤩", label: "Excited")
-    ]
+    private var quickLogMoods: [MoodItem] {
+        let quickLabels: [HKStateOfMind.Label] = [
+            .happy,
+            .calm,
+            .sad,
+            .angry,
+            .drained,
+            .excited
+        ]
+
+        return quickLabels.map { MoodItem(label: $0) }
+    }
 
     private let tools: [MoodToolItem] = [
         .init(title: "Mood Boost", systemImage: "sparkles", path: .breathing ),
@@ -197,9 +203,13 @@ struct HomeView: View {
                             if !hasMoodLoggedToday {
                                 
                                 Image("Content")
-                                    .font(.system(size: 52))
-                                    .opacity(0.3)
+                                    .renderingMode(.template)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 40, height: 40)
+                                    .clipped()
                                     .foregroundStyle(.primary)
+                                    .opacity(0.5)
                                 Text("No Logs")
                                     .font(.subheadline)
                                     .fontWeight(.semibold)
@@ -217,7 +227,13 @@ struct HomeView: View {
                                         .opacity(0.3)
                                     Image(latestMood?.labels.first?.displayName ?? "happy")
                                         .renderingMode(.template)
-                                        .foregroundStyle(.primary)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 40, height: 40)
+                                        .foregroundStyle(latestMood?.labels.first?.level.color ?? .green)
+                                        .clipped()
+                                        
+                                        
                                 }
                                 Text(latestMood?.labels.first?.displayName ?? "Happy")
                                     .font(.subheadline)
@@ -258,28 +274,48 @@ struct HomeView: View {
                 HStack(spacing: 10) {
                     ForEach(quickLogMoods) { mood in
                         Button {
-                            // TODO: Instant log
+                            Task {
+                                await quickLog(mood)
+                            }
                         } label: {
-                            VStack(spacing: 0) {
-                                Text(mood.emoji)
-                                    .font(.system(size: 25))
-                                Text(mood.label)
+                            VStack(spacing: 4) {
+                                ZStack {
+                                    Circle()
+                                        .fill(.ultraThinMaterial)
+                                        .frame(width: 34, height: 34)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(.white.opacity(0.15), lineWidth: 1)
+                                        )
+
+                                    Image(mood.displayName)
+                                        .renderingMode(.template)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 18, height: 18)
+                                        .foregroundStyle(mood.level.color)
+                                }
+
+                                Text(mood.displayName)
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .lineLimit(1)
                             }
-                            .frame(width: 40, height: 50)
+                            .frame(width: 60, height: 60)
                         }
                         .buttonStyle(.plain)
                         .padding(.vertical, 6)
                         .padding(.horizontal, 6)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .background(
+                            .ultraThinMaterial,
+                            in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        )
                         .overlay(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
                                 .stroke(.white.opacity(0.15), lineWidth: 1)
                         )
                         .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 6)
-                        .accessibilityLabel("Quick log \(mood.label)")
+                        .accessibilityLabel("Quick log \(mood.displayName)")
                     }
                 }
                 .padding(.vertical, 2)
@@ -518,33 +554,37 @@ struct HomeView: View {
             Text("Recent")
                 .font(.headline)
 
-            VStack(spacing: 10) {
-                ForEach(0..<3, id: \.self) { _ in
-                    HStack(spacing: 12) {
-                        Text("😌").font(.title3)
+            RecentMoodsView()
+                .environmentObject(HealthKitMoodStore())
+            
+        }
+    }
+    
+    @MainActor
+    private func quickLog(_ mood: MoodItem) async {
+        isLoading = true
+        defer { isLoading = false }
 
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Calm").font(.subheadline.weight(.medium))
-                            Text("Today • 2:14 PM")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+        do {
+            try await moodStore.requestAuth()
+            try await moodStore.saveMood(
+                valence: mood.label.defaultValence,
+                kind: .momentaryEmotion,
+                labels: [mood.label]
+            )
 
-                        Spacer()
+            SharedMoodCache.writeLatest(
+                assetName: mood.displayName,
+                date: Date(),
+                color: mood.level.color
+            )
 
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    }
-                    .padding(12)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .stroke(.white.opacity(0.12), lineWidth: 1)
-                    )
-                    .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 6)
-                }
-            }
+            WidgetCenter.shared.reloadTimelines(ofKind: "MoodWidget")
+            await loadMoods()
+        } catch {
+            errorMessage = error.localizedDescription
+            showError = true
+            print("Quick log failed:", error)
         }
     }
 }
@@ -556,5 +596,7 @@ struct HomeView: View {
     RootShellView()
         .environmentObject(HealthKitMoodStore())
         .environmentObject(DeepLinkRouter())
+        .environmentObject(AuthService())
       
 }
+

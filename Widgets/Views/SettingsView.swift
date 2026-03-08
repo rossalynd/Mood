@@ -7,20 +7,14 @@
 
 import SwiftUI
 
-// MARK: - ProfileView (Skeleton)
-
 @available(iOS 26.0, *)
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var auth: AuthService
 
-    // TODO: Inject stores / auth / user model
-    // @EnvironmentObject var authStore: AuthStore
-    // @EnvironmentObject var moodStore: HealthKitMoodStore
-    // @EnvironmentObject var friendsStore: FriendsStore
+    @State private var showSignIn = false
 
- 
-
-    // MARK: Placeholder state
+    // TODO: Replace placeholder profile values with real stored user profile values later
     @State private var displayName: String = "Rosie"
     @State private var username: String = "@mood"
     @State private var selectedAvatarColor: Color = .gray
@@ -32,43 +26,37 @@ struct SettingsView: View {
     @State private var healthSyncEnabled = true
     @State private var lockScreenWidgetEnabled = true
     @State private var friendsEnabled = false
-    @State private var isSignedIn = false
 
     @State private var showEditProfile = false
-    @State private var showSettings = false
     @State private var showFriends = false
     @State private var showExport = false
     @State private var showAbout = false
     @State private var showPaywall = false
 
+    private var signedInEmail: String {
+        auth.currentUser?.email ?? "No email available"
+    }
+
     var body: some View {
         ZStack {
-            
             LiquidBackdrop()
                 .ignoresSafeArea()
-            
+
             ScrollView {
                 VStack(spacing: 16) {
-                    
                     profileHeaderCard
-                    
                     quickStatsCard
-                    
                     preferencesCard
-                    
                     featuresCard
-                    
                     accountCard
-                    
                     supportCard
+                    creditsCard
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)
-            
-            
             .sheet(isPresented: $showEditProfile) {
                 PlaceholderSheet(title: "Edit Profile")
             }
@@ -85,7 +73,10 @@ struct SettingsView: View {
                 PlaceholderSheet(title: "Upgrade")
             }
         }
-        
+        .sheet(isPresented: $showSignIn) {
+            SignInSheetView()
+                .environmentObject(auth)
+        }
     }
 
     // MARK: - Header
@@ -104,9 +95,16 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(displayName)
                         .font(.headline)
+
                     Text(username)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
+
+                    if auth.isSignedIn {
+                        Text(signedInEmail)
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
                 }
 
                 Spacer()
@@ -119,7 +117,6 @@ struct SettingsView: View {
                 .buttonStyle(.bordered)
             }
 
-            // TODO: Optional tagline / status
             Text("Your space to track moods, patterns, and progress.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -129,7 +126,6 @@ struct SettingsView: View {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color(.secondarySystemBackground))
         )
-        
     }
 
     // MARK: - Quick Stats
@@ -139,7 +135,6 @@ struct SettingsView: View {
             Text("At a glance")
                 .font(.headline)
 
-            // TODO: Replace with real stats
             VStack(spacing: 10) {
                 statRow(title: "Streak", value: "3 days", systemImage: "bolt")
                 statRow(title: "This month", value: "24 check-ins", systemImage: "calendar")
@@ -203,7 +198,7 @@ struct SettingsView: View {
         )
     }
 
-    // MARK: - Features / Social / Premium
+    // MARK: - Features
 
     private var featuresCard: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -270,28 +265,39 @@ struct SettingsView: View {
                 HStack {
                     Label("Status", systemImage: "person.badge.key")
                     Spacer()
-                    Text(isSignedIn ? "Signed in" : "Not signed in")
+                    Text(auth.isSignedIn ? "Signed in" : "Not signed in")
                         .foregroundStyle(.secondary)
                 }
                 .font(.subheadline)
 
+                if auth.isSignedIn {
+                    HStack {
+                        Label("Email", systemImage: "envelope")
+                        Spacer()
+                        Text(signedInEmail)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.trailing)
+                    }
+                    .font(.subheadline)
+                }
+
                 HStack(spacing: 10) {
                     Button {
-                        // TODO: Sign in / create account
+                        showSignIn = true
                     } label: {
-                        Text(isSignedIn ? "Manage account" : "Sign in (optional)")
+                        Text(auth.isSignedIn ? "Manage account" : "Sign in (optional)")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
 
                     Button(role: .destructive) {
-                        // TODO: Sign out / delete local data etc.
+                        auth.signOut()
                     } label: {
                         Text("Sign out")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
-                    .disabled(!isSignedIn)
+                    .disabled(!auth.isSignedIn)
                 }
 
                 Divider()
@@ -395,6 +401,53 @@ struct SettingsView: View {
         )
     }
 
+    // MARK: - Credits
+
+    private var creditsCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Credits")
+                .font(.headline)
+
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .top) {
+                    Image("Happy")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+
+                    Text("Emoji icons made by Pixel perfect from www.flaticon.com.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                HStack(alignment: .top) {
+                    Image(systemName: "sparkles")
+                        .frame(width: 30, height: 30)
+                        .foregroundStyle(.secondary)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("App Developer")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+
+                        Text("Rosie O’Marrow — Cosmic Ironic")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        Text("Sole app developer")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+        )
+    }
+
     // MARK: - Helpers
 
     private func statRow(title: String, value: String, systemImage: String) -> some View {
@@ -418,6 +471,7 @@ private struct PlaceholderSheet: View {
             VStack(spacing: 12) {
                 Text("\(title) Placeholder")
                     .font(.title3.weight(.semibold))
+
                 Text("Replace this with your real view.")
                     .foregroundStyle(.secondary)
             }
@@ -431,4 +485,11 @@ private struct PlaceholderSheet: View {
             }
         }
     }
+}
+
+@available(iOS 26.0, *)
+#Preview {
+    SettingsView()
+        .environmentObject(AuthService())
+        .environmentObject(DeepLinkRouter())
 }

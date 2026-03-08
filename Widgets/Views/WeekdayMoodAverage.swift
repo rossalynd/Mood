@@ -85,16 +85,16 @@ struct CurrentWeekMoodBarGraph: View {
     var body: some View {
         Chart(weekData) { day in
             if let avg = day.average {
-                BarMark(
+                PointMark(
                     x: .value("Day", day.label),
                     y: .value("Avg Valence", avg)
                 )
+                .symbolSize(60)
                 .foregroundStyle(MoodLevel.fromAverageValence(avg).color)
-                .cornerRadius(3)
-                .opacity(0.7)
+                .opacity(0.9)
             } else {
-                // Invisible bar to keep the category visible on the x-axis
-                BarMark(
+                // Invisible point to keep the category visible on the x-axis
+                PointMark(
                     x: .value("Day", day.label),
                     y: .value("Avg Valence", 0)
                 )
@@ -102,8 +102,7 @@ struct CurrentWeekMoodBarGraph: View {
             }
 
             RuleMark(y: .value("Neutral", 0))
-                .foregroundStyle(.white.opacity(0.02))
-                
+                .foregroundStyle(.white.opacity(0.06))
         }
         .chartYScale(domain: -1.0...1.0)
         .chartYAxis(.hidden)
@@ -137,5 +136,6 @@ struct CurrentWeekMoodBarGraph: View {
     RootShellView()
         .environmentObject(HealthKitMoodStore())
         .environmentObject(DeepLinkRouter())
+        .environmentObject(AuthService())
       
 }
