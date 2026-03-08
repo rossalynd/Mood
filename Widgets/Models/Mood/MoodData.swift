@@ -36,42 +36,52 @@ struct MoodCell: View {
     @State private var bump = false
 
     var body: some View {
-        VStack {
-            
+        VStack(spacing: 8) {
             ZStack {
-                Circle()
-                    .fill(isSelected ? mood.level.color.opacity(0.45) : mood.level.color)
-               
-                mood.emoji
-                    .resizable()
-                    .frame(maxWidth: 60, maxHeight: 60)
-                    
-                    
-                
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.white.opacity(isSelected ? 0.16 : 0.08))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .stroke(
+                                isSelected
+                                ? mood.level.color.opacity(0.9)
+                                : .white.opacity(0.08),
+                                lineWidth: isSelected ? 1.5 : 1
+                            )
+                    )
+
+                VStack(spacing: 8) {
+                    Circle()
+                        .fill(mood.level.color.opacity(isSelected ? 0.30 : 0.18))
+                        .frame(width: 44, height: 44)
+                        .overlay {
+                            mood.emoji
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 26, height: 26)
+                        }
+
+                    Text(mood.displayName)
+                        .font(.caption2.weight(.semibold))
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.75)
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, 6)
+                }
+                .padding(.vertical, 10)
             }
-            
-            Text(mood.displayName)
-                .font(.caption2.weight(.semibold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
         }
-        .scaleEffect(bump ? 1.08 : 1.0)
-        
+        .scaleEffect(bump ? 1.05 : 1.0)
         .onChange(of: isSelected) { _, newValue in
-            guard newValue else { return } // only when it becomes selected
-
-            // kick the bump on
+            guard newValue else { return }
             bump = true
-
-            // animate back off
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.14) {
                 bump = false
             }
         }
-        // separate animations feels nicer: snappy up, springy back
-        .animation(.easeOut(duration: 0.12), value: bump) // up + stroke widen
-        .animation(.spring(response: 0.28, dampingFraction: 0.65), value: isSelected)
-       
+        .animation(.easeOut(duration: 0.12), value: bump)
+        .animation(.spring(response: 0.28, dampingFraction: 0.7), value: isSelected)
     }
 }
 
@@ -281,5 +291,122 @@ enum MoodPrivacy: String, CaseIterable, Codable, Identifiable {
         case .public:
             return "globe"
         }
+    }
+
+}
+
+@available(iOS 26.0, *)
+enum MoodFilter: String, CaseIterable, Identifiable {
+    case all
+    case positive
+    case neutral
+    case negative
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .all: return "All"
+        case .positive: return "Positive"
+        case .neutral: return "Neutral"
+        case .negative: return "Negative"
+        }
+    }
+
+    func matches(_ level: MoodLevel) -> Bool {
+        switch self {
+        case .all:
+            return true
+        case .positive:
+            return level == .positive || level == .veryPositive
+        case .neutral:
+            return level == .neutral
+        case .negative:
+            return level == .negative || level == .veryNegative
+        }
+    }
+}
+import Foundation
+
+struct MoodMediaItem: Codable, Hashable, Identifiable {
+    let id: UUID
+    var type: MediaType
+    var url: String
+    var thumbnailURL: String?
+    var createdAt: Date
+
+    enum MediaType: String, Codable {
+        case photo
+        case video
+    }
+
+    init(
+        id: UUID = UUID(),
+        type: MediaType,
+        url: String,
+        thumbnailURL: String? = nil,
+        createdAt: Date = Date()
+    ) {
+        self.id = id
+        self.type = type
+        self.url = url
+        self.thumbnailURL = thumbnailURL
+        self.createdAt = createdAt
+    }
+}
+
+struct MoodWeatherSnapshot: Codable, Hashable {
+    var tempC: Double?
+    var conditionCode: String?
+    var locationBucket: String?
+    var capturedAt: Date?
+}
+
+struct AppMoodDetails: Codable, Hashable {
+    var moodValue: Int?
+    var moodKey: String?
+    var emojiName: String?
+    var labels: [String]?
+    var contextTags: [String]?
+    var note: String?
+    var journalPromptId: String?
+    var journalAnswer: String?
+    var visibility: MoodPrivacy?
+    var media: [MoodMediaItem]?
+    var weather: MoodWeatherSnapshot?
+    var createdAt: Date?
+    var updatedAt: Date?
+    var deviceId: String?
+
+    init(
+        moodValue: Int? = nil,
+        moodKey: String? = nil,
+        emojiName: String? = nil,
+        labels: [String]? = nil,
+        contextTags: [String]? = nil,
+        note: String? = nil,
+        journalPromptId: String? = nil,
+        journalAnswer: String? = nil,
+        visibility: MoodPrivacy? = nil,
+        media: [MoodMediaItem]? = nil,
+        weather: MoodWeatherSnapshot? = nil,
+        createdAt: Date? = nil,
+        updatedAt: Date? = nil,
+        deviceId: String? = nil
+    ) {
+        self.moodValue = moodValue
+        self.moodKey = moodKey
+        self.emojiName = emojiName
+        self.labels = labels
+        self.contextTags = contextTags
+        self.note = note
+        self.journalPromptId = journalPromptId
+        self.journalAnswer = journalAnswer
+        self.visibility = visibility
+        self.media = media
+        self.weather = weather
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.deviceId = deviceId
     }
 }

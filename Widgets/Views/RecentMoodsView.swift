@@ -9,96 +9,97 @@ import Foundation
 import SwiftUI
 import HealthKit
 
+import SwiftUI
+import HealthKit
+
 @available(iOS 26.0, *)
-struct RecentMoodsView: View {
+struct RecentMoodsPreviewCard: View {
     @EnvironmentObject var moodStore: HealthKitMoodStore
+    let onSeeAll: () -> Void
 
     @State private var moods: [HKStateOfMind] = []
     @State private var isLoading = false
     @State private var showError = false
     @State private var errorMessage: String?
 
+    private var displayedMoods: [HKStateOfMind] {
+        Array(moods.prefix(3))
+    }
+
     var body: some View {
-        List {
-            if moods.isEmpty && !isLoading {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Recent")
+                    .font(.headline)
+
+                Spacer()
+
+                Button("See All") {
+                    onSeeAll()
+                }
+                .font(.subheadline.weight(.semibold))
+            }
+
+            if isLoading && moods.isEmpty {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+                }
+                .padding(.vertical, 24)
+            } else if displayedMoods.isEmpty {
                 ContentUnavailableView(
                     "No moods yet",
                     systemImage: "face.smiling",
                     description: Text("Add a mood and it’ll show up here.")
                 )
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
             } else {
-                ForEach(moods.prefix(5), id: \.uuid) { mood in
-                    MoodEntryRow(mood: mood)
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                delete(mood: mood)
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
+                VStack(spacing: 0) {
+                    ForEach(displayedMoods, id: \.uuid) { mood in
+                        MoodEntryRow(mood: mood)
+
+                        if mood.uuid != displayedMoods.last?.uuid {
+                            Divider()
+                                .padding(.leading, 56)
+                                .opacity(0.2)
                         }
+                    }
                 }
-                .onDelete(perform: delete)
             }
-            
         }
-        
-        .navigationTitle("Recent Moods")
-        .overlay {
-            if isLoading && moods.isEmpty { ProgressView() }
+        .padding()
+        .liquidGlassCard(cornerRadius: 22, material: .thinMaterial)
+        .task {
+            await load()
         }
-        .task { await load() }
-        .refreshable { await load() }
+        .onAppear {
+            Task { await load() }
+        }
         .alert("Couldn't load moods", isPresented: $showError) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(errorMessage ?? "Unknown error")
         }
-        
     }
 
     private func load() async {
+        guard !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
+
         do {
-            moods = try await moodStore.fetchRecentMoods(limit: 50)
+            moods = try await moodStore.fetchRecentMoods(limit: 10)
         } catch {
             errorMessage = error.localizedDescription
             showError = true
         }
     }
-    
-    private func delete(at offsets: IndexSet) {
-        // Determine the displayed subset and map offsets safely into concrete items
-        let displayed: [HKStateOfMind] = Array(moods.prefix(5))
-
-        let itemsToDelete: [HKStateOfMind] = offsets.compactMap { index -> HKStateOfMind? in
-            guard index >= 0 && index < displayed.count else { return nil }
-            return displayed[index]
-        }
-
-        // Perform deletions in the store
-        for mood in itemsToDelete {
-            delete(mood: mood)
-        }
-
-        // Update local state immediately to reflect deletions
-        moods.removeAll { m in itemsToDelete.contains(where: { $0.uuid == m.uuid }) }
-    }
-
-    private func delete(mood: HKStateOfMind) {
-        // Fire-and-forget delete; if your store is async, you could adapt this to await and handle errors
-        Task {
-            do {
-                try await moodStore.deleteMood(mood)
-            } catch {
-                errorMessage = error.localizedDescription
-                showError = true
-            }
-        }
-    }
 }
 
-@available(iOS 26.0, *)private struct MoodEntryRow: View {
+@available(iOS 26.0, *)
+    struct MoodEntryRow: View {
     let mood: HKStateOfMind
 
     private var primaryLabel: HKStateOfMind.Label? { mood.labels.first }
@@ -149,7 +150,3 @@ struct RecentMoodsView: View {
     }
 }
 
-#Preview {
-    RecentMoodsView()
-        .environmentObject(HealthKitMoodStore())
-}

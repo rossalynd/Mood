@@ -15,9 +15,11 @@ enum HomeRoute: Hashable {
     case settings
     case profile
     case insights
+    case recentMoods
     case friends
     case breathing
 }
+
 
 // MARK: - App Tabs (custom glass tab bar)
 enum MoodTab: Hashable, CaseIterable {
@@ -107,6 +109,9 @@ struct RootShellView: View {
                         FriendsView(path: $path)
                     case .breathing:
                         BreathingView(path: $path)
+                    case .recentMoods:
+                        RecentMoodsListView()
+                    
                     
                     }
                 }

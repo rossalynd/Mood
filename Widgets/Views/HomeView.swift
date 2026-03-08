@@ -103,7 +103,7 @@ struct HomeView: View {
                     recentEntriesPreview
                 }
                 .padding(.horizontal)
-                .padding(.bottom, 110) // leaves room for the floating tab bar
+                .padding(.bottom, 140) // leaves room for the floating tab bar
                
                 
             }
@@ -324,28 +324,75 @@ struct HomeView: View {
     }
 
     // MARK: 4) Today’s Snapshot
+    private var todaySnapshot: MoodDaySnapshot {
+        moodStore.todaySnapshot
+    }
 
+    private var todayAverageText: String {
+        todaySnapshot.averageLabelText
+    }
+
+    private var todayCheckInCountText: String {
+        "\(todaySnapshot.checkInCount)"
+    }
+
+    private var todayTopTriggerText: String {
+        todaySnapshot.topLabelName ?? "None"
+    }
+
+    private var todayLastLogText: String {
+        guard let date = todaySnapshot.lastLogDate else { return "No logs" }
+        return abbreviatedRelativeDate(from: date)
+    }
+    
+    private func abbreviatedRelativeDate(from date: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: date, relativeTo: Date())
+    }
+    
     private var todaysSnapshotCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Today")
                 .font(.headline)
 
             VStack(spacing: 12) {
-                snapshotRow(title: "Average", systemImage: "waveform.path.ecg", value: "Calm 🙂") // TODO
-                snapshotRow(title: "Check-ins", systemImage: "checkmark.circle", value: "2") // TODO
+                snapshotRow(
+                    title: "Average",
+                    systemImage: "waveform.path.ecg",
+                    value: todayAverageText
+                )
+
+                snapshotRow(
+                    title: "Check-ins",
+                    systemImage: "checkmark.circle",
+                    value: todayCheckInCountText
+                )
 
                 if hasTags {
-                    snapshotRow(title: "Top trigger", systemImage: "flame", value: "Work") // TODO
+                    snapshotRow(
+                        title: "Top trigger",
+                        systemImage: "flame",
+                        value: todayTopTriggerText
+                    )
                 } else {
-                    snapshotRow(title: "Streak", systemImage: "bolt", value: "3 days") // TODO
-                    snapshotRow(title: "Last log time", systemImage: "clock", value: "2h ago") // TODO
+                    snapshotRow(
+                        title: "Streak",
+                        systemImage: "bolt",
+                        value: "\(moodStore.streak.current) day\(moodStore.streak.current == 1 ? "" : "s")"
+                    )
+
+                    snapshotRow(
+                        title: "Last log time",
+                        systemImage: "clock",
+                        value: todayLastLogText
+                    )
                 }
             }
             .font(.subheadline)
         }
         .padding(.top, 5)
         .padding(.leading, 10)
-        
     }
 
     private func snapshotRow(title: String, systemImage: String, value: String) -> some View {
@@ -370,9 +417,7 @@ struct HomeView: View {
                     Text("This week")
                         .font(.headline)
                     Spacer()
-                    Label("Up", systemImage: "arrow.up.right")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    
                 }
 
                 CurrentWeekMoodBarGraph()
@@ -381,10 +426,7 @@ struct HomeView: View {
                     
                     
 
-                Text("Best day: Sat • Low point: Wed afternoon")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
+                
             }
         }
         .buttonStyle(.plain)
@@ -549,16 +591,14 @@ struct HomeView: View {
 
     // MARK: Recent
 
-    private var recentEntriesPreview: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Recent")
-                .font(.headline)
+    
 
-            RecentMoodsView()
-                .environmentObject(HealthKitMoodStore())
-            
-        }
-    }
+            private var recentEntriesPreview: some View {
+                RecentMoodsPreviewCard {
+                    path.append(HomeRoute.recentMoods)
+                }
+            }
+    
     
     @MainActor
     private func quickLog(_ mood: MoodItem) async {

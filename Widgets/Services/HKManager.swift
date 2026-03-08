@@ -115,7 +115,71 @@ final class HealthKitMoodStore: ObservableObject {
         }
         await refresh()
     }
+    func moods(forSameDayAs date: Date) -> [HKStateOfMind] {
+            let calendar = Calendar.current
+            return moods.filter { calendar.isDate($0.startDate, inSameDayAs: date) }
+        }
 
+        func snapshot(for date: Date) -> MoodDaySnapshot {
+            MoodDaySnapshot(
+                date: date,
+                moods: moods(forSameDayAs: date)
+            )
+        }
+
+        var todaySnapshot: MoodDaySnapshot {
+            snapshot(for: Date())
+        }
 
    }
 
+import HealthKit
+import WidgetKit
+
+@available(iOS 26.0, *)
+struct MoodDaySnapshot {
+    let date: Date
+    let moods: [HKStateOfMind]
+
+    var checkInCount: Int {
+        moods.count
+    }
+
+    var averageValence: Double? {
+        guard !moods.isEmpty else { return nil }
+        let total = moods.reduce(0.0) { $0 + $1.valence }
+        return total / Double(moods.count)
+    }
+
+    var latestMood: HKStateOfMind? {
+        moods.max(by: { $0.startDate < $1.startDate })
+    }
+
+    var lastLogDate: Date? {
+        latestMood?.startDate
+    }
+
+    var topLabelName: String? {
+        let names = moods
+            .flatMap { $0.labels.map(\.displayName) }
+
+        guard !names.isEmpty else { return nil }
+
+        let counts = Dictionary(grouping: names, by: { $0 })
+            .mapValues(\.count)
+
+        return counts.max(by: { $0.value < $1.value })?.key
+    }
+
+    var averageLabelText: String {
+        guard let averageValence else { return "No data" }
+
+        switch averageValence {
+        case ..<(-0.6): return "Very Low 😞"
+        case -0.6..<(-0.2): return "Low 🙁"
+        case -0.2..<0.2: return "Calm 🙂"
+        case 0.2..<0.6: return "Good 😊"
+        default: return "Great 😄"
+        }
+    }
+}
