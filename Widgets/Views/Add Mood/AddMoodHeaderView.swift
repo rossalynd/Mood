@@ -53,9 +53,7 @@ struct SelectedMoodHeroCard: View {
                 Text(selectedMoodItem?.displayName ?? "No mood selected")
                     .font(.headline)
 
-                Text(summaryText)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                
             }
 
             Spacer()
@@ -64,19 +62,7 @@ struct SelectedMoodHeroCard: View {
         .onTapGesture(perform: onTap)
     }
 
-    private var summaryText: String {
-        guard let item = selectedMoodItem else {
-            return "Choose the feeling that fits best."
-        }
 
-        switch item.level {
-        case .veryPositive: return "Very positive check-in"
-        case .positive: return "Positive check-in"
-        case .neutral: return "Neutral check-in"
-        case .negative: return "Negative check-in"
-        case .veryNegative: return "Very negative check-in"
-        }
-    }
 }
 
 @available(iOS 26.0, *)
@@ -113,17 +99,19 @@ struct SaveMoodBar: View {
                         ProgressView()
                             .frame(maxWidth: .infinity)
                     } else {
-                        VStack(spacing: 3) {
-                            Text(canSave ? "Save Mood" : "Select a mood")
-                                .font(.headline)
-
-                            if let selectedMoodItem {
-                                Text("\(selectedMoodItem.displayName) • \(visibility.displayName)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                        
+                            VStack(spacing: 3) {
+                                Text("Save Mood")
+                                    .font(.headline)
+                                
+                                if let selectedMoodItem {
+                                    Text("\(selectedMoodItem.displayName) • \(visibility.displayName)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
-                        }
-                        .frame(maxWidth: .infinity)
+                            .frame(maxWidth: .infinity)
+                        
                     }
                 }
                 .padding(.vertical, 4)
@@ -133,6 +121,6 @@ struct SaveMoodBar: View {
             .padding(.horizontal)
             .padding(.bottom, 14)
         }
-        .background(.ultraThinMaterial)
+        
     }
 }

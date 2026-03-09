@@ -39,6 +39,7 @@ struct RootView: View {
                 if let uid = session.user?.uid {
                     profile.startListening(uid: uid)
                 }
+                
             }
 
             .onChange(of: session.user?.uid) { oldValue, newValue in
@@ -48,5 +49,8 @@ struct RootView: View {
                     profile.stopListening()
                 }
             }
+            .task {
+                            await moodStore.refresh()
+                        }
     }
 }

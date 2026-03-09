@@ -112,12 +112,11 @@
 				Extensions/LiquidGlassExtension.swift,
 				Features/MoodStreak.swift,
 				Models/Mood/MoodData.swift,
-				Models/Mood/MoodTagEngine.swift,
 				Services/HKManager.swift,
 				Services/SoundPlayer.swift,
 				SharedMoodCache.swift,
 				UIComponents/LiquidBackdrop.swift,
-				Views/MoodCell.swift,
+				"Views/Add Mood/MoodCell.swift",
 			);
 			target = DC22BB302F57B3F400CFC1CD /* InstaMood Watch App */;
 		};

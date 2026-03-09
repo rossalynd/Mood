@@ -13,10 +13,13 @@ import WidgetKit
 @available(iOS 26.0, *)
 struct AddMoodView: View {
     @EnvironmentObject private var moodStore: HealthKitMoodStore
+    @EnvironmentObject var auth: AuthService
     @Environment(\.dismiss) private var dismiss
 
     @StateObject private var viewModel = AddMoodViewModel()
-
+    @State private var showSignIn = false
+    
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             LiquidBackdrop()
@@ -37,31 +40,36 @@ struct AddMoodView: View {
                         MoodPickerSection(viewModel: viewModel)
                     }
 
-                    if viewModel.isSignedIn {
+                    if auth.isSignedIn {
                         VisibilityPickerSection(visibility: $viewModel.visibility)
+                        MoodDetailsSection(viewModel: viewModel)
+                    } else {
+                        SignInPromptCard(cardRadius: viewModel.cardRadius) {
+                            showSignIn = true
+                           }
                     }
-
-                    MoodDetailsSection(viewModel: viewModel)
 
                     Color.clear.frame(height: 120)
                 }
                 .padding(.horizontal)
                 .padding(.top, 12)
             }
-
-            SaveMoodBar(
-                canSave: viewModel.canSave,
-                isSaving: viewModel.isSaving,
-                selectedMoodItem: viewModel.selectedMoodItem,
-                visibility: viewModel.visibility
-            ) {
-                Task {
-                    await viewModel.saveMood(using: moodStore)
-                    if viewModel.didSaveSuccessfully {
-                        dismiss()
+            if viewModel.canSave {
+                SaveMoodBar(
+                    canSave: viewModel.canSave,
+                    isSaving: viewModel.isSaving,
+                    selectedMoodItem: viewModel.selectedMoodItem,
+                    visibility: viewModel.visibility
+                ) {
+                    Task {
+                        await viewModel.saveMood(using: moodStore)
+                        if viewModel.didSaveSuccessfully {
+                            dismiss()
+                        }
                     }
                 }
             }
+            
         }
         .autocorrectionDisabled(false)
         .textInputAutocapitalization(.sentences)
@@ -69,6 +77,10 @@ struct AddMoodView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(viewModel.errorMessage ?? "Unknown error")
+        }
+        .sheet(isPresented: $showSignIn) {
+            SignInSheetView()
+                .environmentObject(auth)
         }
     }
 }

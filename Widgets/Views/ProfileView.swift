@@ -15,31 +15,22 @@ struct ProfileView: View {
         ZStack {
             LiquidBackdrop()
                 .ignoresSafeArea()
-
-            VStack(spacing: 18) {
-                if auth.isSignedIn {
-                    signedInContent
-                } else {
-                    signedOutPremiumPrompt
-                }
+            ScrollView{
+                VStack(spacing: 18) {
+                    if auth.isSignedIn {
+                        signedInContent
+                    } else {
+                        signedOutPremiumPrompt
+                    }
+                }.padding(.horizontal, 20)
+                    .padding(.bottom, 60)
+                    .padding(.top, 16)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
+            
         }
+       
         .navigationBarHidden(true)
-        .safeAreaInset(edge: .top) {
-            HStack {
-                Text("Profile")
-                    .font(.headline)
-                Spacer()
-            }
-            .padding(.horizontal)
-            .padding(.bottom, 10)
-            .background(.thinMaterial)
-            .overlay(alignment: .bottom) {
-                Divider().opacity(0.25)
-            }
-        }
+        
         .task {
             guard auth.isSignedIn else { return }
             await profileStore.loadCurrentUserProfile()
@@ -124,7 +115,7 @@ struct ProfileView: View {
                     )
 
                 VStack(spacing: 20) {
-                    ZStack {
+                    ZStack(alignment: .center) {
                         Circle()
                             .fill(
                                 LinearGradient(
@@ -137,13 +128,23 @@ struct ProfileView: View {
                                 )
                             )
                             .frame(width: 84, height: 84)
-                            .padding(.top, 40)
-
-                        Image(systemName: "person.crop.circle.badge.sparkles")
-                            .font(.system(size: 38, weight: .medium))
-                            .foregroundStyle(.white)
+                            
+                        
+                        ZStack(alignment: .topTrailing) {
+                            Image(systemName: "person.crop.circle")
+                                .font(.system(size: 68, weight: .medium))
+                                .foregroundStyle(.white)
+                                .padding()
+                            
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 48, weight: .medium))
+                                .foregroundStyle(.white)
+                                
+                            
+                        }
                     }
-                   
+                    .padding(.top, 30)
+                
 
                     VStack(spacing: 8) {
                         Text("Unlock Your Profile")
@@ -196,7 +197,7 @@ struct ProfileView: View {
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
-                        .padding(.bottom, 4)
+                        .padding(.bottom, 40)
                 }
                 .padding(.horizontal, 24)
             }
@@ -204,12 +205,13 @@ struct ProfileView: View {
             
             
             .padding(.top, 20)
-            Spacer(minLength: 70)
+           
            
 
            
             
         }
+        .padding(.bottom, 40)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
        
         

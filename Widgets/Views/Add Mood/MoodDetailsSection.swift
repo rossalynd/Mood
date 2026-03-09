@@ -114,7 +114,6 @@ struct MoodDetailsSection: View {
                     } else {
                         HStack(spacing: 10) {
                             Image(systemName: "\(viewModel.weatherConditionCode).fill")
-                            Text(viewModel.weatherConditionCode)
 
                             if let temp = viewModel.weatherTempC {
                                 Text("\(temp, specifier: "%.1f")°F")

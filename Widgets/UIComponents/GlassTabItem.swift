@@ -10,42 +10,53 @@ import SwiftUI
 struct GlassTabItem: View {
     let tab: MoodTab
     let isSelected: Bool
+    let namespace: Namespace.ID
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 4) {
+            VStack(spacing: 2) {
                 Image(systemName: tab.systemImage)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 22, weight: .semibold))
+
                 Text(tab.title)
                     .font(.caption2)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
+            .padding(.vertical, 4)
             .contentShape(Rectangle())
+            .background {
+                ZStack {
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: 65, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 65, style: .continuous)
+                                    .stroke(.white.opacity(0.18), lineWidth: 1)
+                            )
+                            .glassEffect()
+                            
+                            .matchedGeometryEffect(id: "selectedTabBackground", in: namespace)
+                    }
+                }
+            }
         }
         .buttonStyle(.plain)
         .foregroundStyle(isSelected ? .primary : .secondary)
-        .background(
-            Group {
-                
-                if isSelected {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .stroke(.white.opacity(0.18), lineWidth: 1)
-                        )
-                } else {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(Color.clear)
-                }
-                
-            }
-        )
-        .animation(.spring(response: 0.28, dampingFraction: 0.9), value: isSelected)
-        
         .accessibilityLabel(tab.title)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
+}
+
+#Preview("GlassTabItem Selected") {
+    @Namespace var ns
+
+    return GlassTabItem(
+        tab: .home,
+        isSelected: true,
+        namespace: ns,
+        action: {}
+    )
+    .padding()
+    .background(.black.opacity(0.1))
 }

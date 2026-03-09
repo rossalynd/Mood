@@ -116,7 +116,7 @@ struct HomeView: View {
                 header
                     .frame(maxWidth: .infinity)
                     .padding(10)
-                    .background(.regularMaterial)
+                    .background(.thinMaterial.opacity(0.9))
             
                     
                     
@@ -163,22 +163,19 @@ struct HomeView: View {
             Spacer()
 
             
-            StreakPill()
-                .task {
-                    await moodStore.refresh()
-                }
+            
             Button {
                 path.append(HomeRoute.settings)
             } label: {
                 Image(systemName: "gearshape.fill")
-                    .font(Font.system(size: 20))
-                    .foregroundColor(.primary)
+                    .font(Font.system(size: 30))
+                    .foregroundColor(.secondary)
             }
 
            
 
             
-        }.padding(10)
+        }.padding(5)
         
      
         
@@ -243,7 +240,7 @@ struct HomeView: View {
                                 
                             }
                             
-                        }.frame(width: 120)
+                        }.frame(width: 150, height: 150)
                         
                     }
                 }
@@ -253,9 +250,9 @@ struct HomeView: View {
                 
                 
                 
-                .padding()
+                
                 .liquidGlassCard(cornerRadius: cardRadius, material: .thin)
-                Spacer()
+                
             }
         }.foregroundStyle(.primary)
             .buttonStyle(.borderless)
@@ -264,10 +261,13 @@ struct HomeView: View {
     // MARK: 3) Quick Log Row
 
     private var quickLogRow: some View {
-        VStack(alignment: .center, spacing: 10) {
+        VStack(alignment: .center, spacing: 0) {
             HStack {
                 Text("How are you feeling?")
-                    .font(.headline)
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .padding(.bottom, 8)
+                    .padding(.leading, 6)
                 Spacer()
             }
 
@@ -296,13 +296,17 @@ struct HomeView: View {
                                             .scaledToFit()
                                             .frame(width: 35, height: 35)
                                             .foregroundStyle(mood.level.color)
+                                            
+                                            .glassEffect(.clear)
                                     }
+                                    
 
                                     Text(mood.displayName)
                                         .font(.footnote)
                                         .foregroundStyle(.secondary)
                                         .lineLimit(1)
                                 }
+                                
                                 .frame(width: 60, height: 60)
                             }
                             .buttonStyle(.plain)
@@ -313,10 +317,10 @@ struct HomeView: View {
                     }
                     .frame(minWidth: geo.size.width)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 2)
+                    
                 }
             }
-            .frame(height: 80)
+            .frame(height: 70)
         }
     }
 
@@ -517,9 +521,9 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 10) {
             
             LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 10),
-                GridItem(.flexible(), spacing: 10),
-                GridItem(.flexible(), spacing: 10)
+                GridItem(.flexible(), spacing: 16),
+                GridItem(.flexible(), spacing: 16),
+                GridItem(.flexible(), spacing: 16)
             ], spacing: 10) {
                 ForEach(tools) { tool in
                     Button {

@@ -57,7 +57,7 @@ final class AddMoodViewModel: ObservableObject {
     @Published var showError = false
     @Published var didSaveSuccessfully = false
 
-    let isSignedIn = true
+    
     let cardRadius: CGFloat = 24
 
     let moodColumns: [GridItem] = [
