@@ -28,62 +28,6 @@ struct MoodItem: Identifiable, Hashable {
     var level: MoodLevel { label.level }
 }
 
-@available(iOS 26.0, *)
-struct MoodCell: View {
-    let mood: MoodItem
-    let isSelected: Bool
-
-    @State private var bump = false
-
-    var body: some View {
-        VStack(spacing: 8) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(.white.opacity(isSelected ? 0.16 : 0.08))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .stroke(
-                                isSelected
-                                ? mood.level.color.opacity(0.9)
-                                : .white.opacity(0.08),
-                                lineWidth: isSelected ? 1.5 : 1
-                            )
-                    )
-
-                VStack(spacing: 8) {
-                    Circle()
-                        .fill(mood.level.color.opacity(isSelected ? 0.30 : 0.18))
-                        .frame(width: 44, height: 44)
-                        .overlay {
-                            mood.emoji
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 26, height: 26)
-                        }
-
-                    Text(mood.displayName)
-                        .font(.caption2.weight(.semibold))
-                        .lineLimit(2)
-                        .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.75)
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal, 6)
-                }
-                .padding(.vertical, 10)
-            }
-        }
-        .scaleEffect(bump ? 1.05 : 1.0)
-        .onChange(of: isSelected) { _, newValue in
-            guard newValue else { return }
-            bump = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.14) {
-                bump = false
-            }
-        }
-        .animation(.easeOut(duration: 0.12), value: bump)
-        .animation(.spring(response: 0.28, dampingFraction: 0.7), value: isSelected)
-    }
-}
 
 
 
@@ -355,12 +299,7 @@ struct MoodMediaItem: Codable, Hashable, Identifiable {
     }
 }
 
-struct MoodWeatherSnapshot: Codable, Hashable {
-    var tempC: Double?
-    var conditionCode: String?
-    var locationBucket: String?
-    var capturedAt: Date?
-}
+
 
 struct AppMoodDetails: Codable, Hashable {
     var moodValue: Int?
@@ -373,7 +312,7 @@ struct AppMoodDetails: Codable, Hashable {
     var journalAnswer: String?
     var visibility: MoodPrivacy?
     var media: [MoodMediaItem]?
-    var weather: MoodWeatherSnapshot?
+    var weather: WeatherSnapshot?
     var createdAt: Date?
     var updatedAt: Date?
     var deviceId: String?
@@ -389,7 +328,7 @@ struct AppMoodDetails: Codable, Hashable {
         journalAnswer: String? = nil,
         visibility: MoodPrivacy? = nil,
         media: [MoodMediaItem]? = nil,
-        weather: MoodWeatherSnapshot? = nil,
+        weather: WeatherSnapshot? = nil,
         createdAt: Date? = nil,
         updatedAt: Date? = nil,
         deviceId: String? = nil
@@ -409,4 +348,18 @@ struct AppMoodDetails: Codable, Hashable {
         self.updatedAt = updatedAt
         self.deviceId = deviceId
     }
+}
+
+import SwiftUI
+
+struct MoodTag: Identifiable, Hashable {
+    let id = UUID()
+    let name: String
+    var isSuggested: Bool = true
+}
+
+struct WeatherSnapshot: Codable, Hashable {
+    let recordedAt: Date
+    let temperatureC: Double
+    let conditionCode: String
 }
