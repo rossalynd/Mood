@@ -28,3 +28,9 @@ struct FriendsView: View {
         }
     }
 }
+
+
+#Preview {
+    @Previewable @State var path = NavigationPath()
+    FriendsView(path: $path)
+}

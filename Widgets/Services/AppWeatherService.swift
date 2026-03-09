@@ -5,11 +5,11 @@
 //  Created by Rosie on 3/8/26.
 //
 
-
 import Foundation
 import CoreLocation
 import WeatherKit
 
+@available(iOS 26.0, *)
 @MainActor
 final class AppWeatherService {
     func fetchSnapshot(for location: CLLocation) async throws -> WeatherSnapshot {
@@ -18,8 +18,8 @@ final class AppWeatherService {
 
         return WeatherSnapshot(
             recordedAt: Date(),
-            temperatureC: current.temperature.converted(to: .celsius).value,
-            conditionCode: String(describing: current.condition)
+            temperatureC: current.temperature.converted(to: .fahrenheit).value,
+            conditionCode: current.symbolName
         )
     }
 }

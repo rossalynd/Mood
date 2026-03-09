@@ -16,14 +16,17 @@ struct GlassTabBar: View {
     var body: some View {
         HStack(spacing: 6) {
             ForEach(MoodTab.allCases, id: \.self) { tab in
+                
                 GlassTabItem(
                     tab: tab,
                     isSelected: tab == selected
                 ) {
+                    
                     onSelect(tab)
                 }
             }
         }
+        
         .padding(10)
         .background(
             .thinMaterial,

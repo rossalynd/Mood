@@ -62,12 +62,11 @@ struct HomeView: View {
 
     private var quickLogMoods: [MoodItem] {
         let quickLabels: [HKStateOfMind.Label] = [
+            .grateful,
             .happy,
             .calm,
             .sad,
-            .angry,
-            .drained,
-            .excited
+            .angry
         ]
 
         return quickLabels.map { MoodItem(label: $0) }
@@ -95,7 +94,6 @@ struct HomeView: View {
                         todaysSnapshotCard
                     }
                     quickLogRow
-                    
                     weeklyTrendCard
                     friendsSection
                     moodToolsGrid
@@ -266,60 +264,59 @@ struct HomeView: View {
     // MARK: 3) Quick Log Row
 
     private var quickLogRow: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("How are you feeling?")
-                .font(.headline)
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(quickLogMoods) { mood in
-                        Button {
-                            Task {
-                                await quickLog(mood)
-                            }
-                        } label: {
-                            VStack(spacing: 4) {
-                                ZStack {
-                                    Circle()
-                                        .fill(.ultraThinMaterial)
-                                        .frame(width: 34, height: 34)
-                                        .overlay(
-                                            Circle()
-                                                .stroke(.white.opacity(0.15), lineWidth: 1)
-                                        )
-
-                                    Image(mood.displayName)
-                                        .renderingMode(.template)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 18, height: 18)
-                                        .foregroundStyle(mood.level.color)
-                                }
-
-                                Text(mood.displayName)
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                            }
-                            .frame(width: 60, height: 60)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.vertical, 6)
-                        .padding(.horizontal, 6)
-                        .background(
-                            .ultraThinMaterial,
-                            in: RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(.white.opacity(0.15), lineWidth: 1)
-                        )
-                        .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 6)
-                        .accessibilityLabel("Quick log \(mood.displayName)")
-                    }
-                }
-                .padding(.vertical, 2)
+        VStack(alignment: .center, spacing: 10) {
+            HStack {
+                Text("How are you feeling?")
+                    .font(.headline)
+                Spacer()
             }
+
+            GeometryReader { geo in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(quickLogMoods) { mood in
+                            Button {
+                                Task {
+                                    await quickLog(mood)
+                                }
+                            } label: {
+                                VStack {
+                                    ZStack {
+                                        Circle()
+                                            .fill(.ultraThinMaterial)
+                                            .frame(width: 40, height: 40)
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(.white.opacity(0.15), lineWidth: 1)
+                                            )
+
+                                        Image(mood.displayName)
+                                            .renderingMode(.template)
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 35, height: 35)
+                                            .foregroundStyle(mood.level.color)
+                                    }
+
+                                    Text(mood.displayName)
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(1)
+                                }
+                                .frame(width: 60, height: 60)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.vertical, 6)
+                            .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 6)
+                            .accessibilityLabel("Quick log \(mood.displayName)")
+                        }
+                    }
+                    .frame(minWidth: geo.size.width)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 2)
+                }
+            }
+            .frame(height: 80)
         }
     }
 
@@ -414,7 +411,7 @@ struct HomeView: View {
         } label: {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Text("This week")
+                    Text("Trending Mood")
                         .font(.headline)
                     Spacer()
                     
@@ -422,7 +419,7 @@ struct HomeView: View {
 
                 CurrentWeekMoodBarGraph()
                    
-                    .frame(height: 150)
+                    .frame(height: 120)
                     
                     
 
@@ -518,9 +515,7 @@ struct HomeView: View {
 
     private var moodToolsGrid: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Quick reset")
-                .font(.headline)
-
+            
             LazyVGrid(columns: [
                 GridItem(.flexible(), spacing: 10),
                 GridItem(.flexible(), spacing: 10),

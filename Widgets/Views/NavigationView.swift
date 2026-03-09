@@ -71,7 +71,40 @@ struct RootShellView: View {
                             .frame(maxWidth: .infinity, maxHeight: 30)
                         }
                     
-                    ZStack {
+                    ZStack(alignment: .bottomTrailing) {
+                        Button {
+                            if !path.isEmpty {
+                                    path.removeLast(path.count)
+                                } else {
+                                    path.append(HomeRoute.logMood)
+                                }
+                        } label: {
+                            
+                                Image(systemName: "plus")
+                                    .font(.system(size: 25, weight: .regular))
+                                    .foregroundStyle(.foreground)
+                                    .frame(width: 60, height: 60)
+                                    .background(
+                                        .thinMaterial,
+                                        in: RoundedRectangle(cornerRadius: 30, style: .continuous)
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 30, style: .continuous)
+                                            .stroke(.white.opacity(0.15), lineWidth: 1)
+                                    )
+                                    .buttonStyle(.glass)
+                                    .shadow(color: .black.opacity(0.10), radius: 18, x: 0, y: 10)
+                                
+                                    
+                                    
+                                        
+                            
+                            
+                            .padding(.bottom, 130)
+                            .padding(.trailing, 10)
+                                
+                        }
+                        
                         GlassTabBar(selected: $selectedTab) { tab in
                             
                             if tab == selectedTab {
@@ -85,13 +118,17 @@ struct RootShellView: View {
                         .padding(.bottom, 40)
                         
                         
+                        
                             
                             
                     }
                     .shadow(radius: 10)
                     
+                    .ignoresSafeArea()
+                    
                     
                 }
+                
                 .ignoresSafeArea()
                 
                 .navigationDestination(for: HomeRoute.self) { route in
@@ -157,5 +194,6 @@ struct RootShellView: View {
     RootShellView()
         .environmentObject(HealthKitMoodStore())
         .environmentObject(DeepLinkRouter())
+        .environmentObject(AuthService())
     
 }

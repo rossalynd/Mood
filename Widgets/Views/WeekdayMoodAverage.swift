@@ -37,7 +37,7 @@ extension MoodLevel {
 struct CurrentWeekMoodBarGraph: View {
     @EnvironmentObject var moodStore: HealthKitMoodStore
 
-    var chartHeight: CGFloat = 150
+    var chartHeight: CGFloat = 100
 
     private var weekData: [WeekdayMoodAverage] {
         let cal = Calendar.current
@@ -89,7 +89,7 @@ struct CurrentWeekMoodBarGraph: View {
                     x: .value("Day", day.label),
                     y: .value("Avg Valence", avg)
                 )
-                .symbolSize(60)
+                .symbolSize(200)
                 .foregroundStyle(MoodLevel.fromAverageValence(avg).color)
                 .opacity(0.9)
             } else {

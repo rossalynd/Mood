@@ -28,6 +28,7 @@ struct GlassTabItem: View {
         .foregroundStyle(isSelected ? .primary : .secondary)
         .background(
             Group {
+                
                 if isSelected {
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
                         .fill(.ultraThinMaterial)
@@ -39,9 +40,11 @@ struct GlassTabItem: View {
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
                         .fill(Color.clear)
                 }
+                
             }
         )
         .animation(.spring(response: 0.28, dampingFraction: 0.9), value: isSelected)
+        
         .accessibilityLabel(tab.title)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }

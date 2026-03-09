@@ -12,65 +12,63 @@ struct ProfileView: View {
     @EnvironmentObject var profileStore: ProfileStore
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                LiquidBackdrop()
-                    .ignoresSafeArea()
+        ZStack {
+            LiquidBackdrop()
+                .ignoresSafeArea()
 
-                VStack(spacing: 18) {
-                    if auth.isSignedIn {
-                        signedInContent
-                    } else {
-                        signedOutPremiumPrompt
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 24)
-            }
-            .navigationBarHidden(true)
-            .safeAreaInset(edge: .top) {
-                HStack {
-                    Text("Profile")
-                        .font(.headline)
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 10)
-                .background(.thinMaterial)
-                .overlay(alignment: .bottom) {
-                    Divider().opacity(0.25)
+            VStack(spacing: 18) {
+                if auth.isSignedIn {
+                    signedInContent
+                } else {
+                    signedOutPremiumPrompt
                 }
             }
-            .task {
-                guard auth.isSignedIn else { return }
-                await profileStore.loadCurrentUserProfile()
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+        }
+        .navigationBarHidden(true)
+        .safeAreaInset(edge: .top) {
+            HStack {
+                Text("Profile")
+                    .font(.headline)
+                Spacer()
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 10)
+            .background(.thinMaterial)
+            .overlay(alignment: .bottom) {
+                Divider().opacity(0.25)
+            }
+        }
+        .task {
+            guard auth.isSignedIn else { return }
+            await profileStore.loadCurrentUserProfile()
+            presentSetupIfNeeded()
+        }
+        .onChange(of: auth.isSignedIn) { _, isSignedIn in
+            Task {
+                if isSignedIn {
+                    await profileStore.loadCurrentUserProfile()
+                }
                 presentSetupIfNeeded()
             }
-            .onChange(of: auth.isSignedIn) { _, isSignedIn in
+        }
+        .sheet(isPresented: $shouldShowSetup) {
+            AccountSetupView { data in
                 Task {
-                    if isSignedIn {
-                        await profileStore.loadCurrentUserProfile()
-                    }
-                    presentSetupIfNeeded()
-                }
-            }
-            .sheet(isPresented: $shouldShowSetup) {
-                AccountSetupView { data in
-                    Task {
-                        do {
-                            print("Current UID:", auth.currentUser?.uid ?? "nil")
-                            try await profileStore.saveAccountSetup(data)
-                            shouldShowSetup = false
-                        } catch {
-                            print("Failed to save profile:", error.localizedDescription)
-                        }
+                    do {
+                        print("Current UID:", auth.currentUser?.uid ?? "nil")
+                        try await profileStore.saveAccountSetup(data)
+                        shouldShowSetup = false
+                    } catch {
+                        print("Failed to save profile:", error.localizedDescription)
                     }
                 }
             }
-            .sheet(isPresented: $showSignIn) {
-                SignInSheetView()
-                    .environmentObject(auth)
-            }
+        }
+        .sheet(isPresented: $showSignIn) {
+            SignInSheetView()
+                .environmentObject(auth)
         }
     }
     // MARK: - Present Setup
@@ -117,7 +115,7 @@ struct ProfileView: View {
         VStack(spacing: 20) {
             
 
-            ZStack {
+            ZStack(alignment: .top) {
                 RoundedRectangle(cornerRadius: 32, style: .continuous)
                     .fill(.ultraThinMaterial)
                     .overlay(
@@ -139,12 +137,13 @@ struct ProfileView: View {
                                 )
                             )
                             .frame(width: 84, height: 84)
+                            .padding(.top, 40)
 
                         Image(systemName: "person.crop.circle.badge.sparkles")
                             .font(.system(size: 38, weight: .medium))
                             .foregroundStyle(.white)
                     }
-                    .padding(.top, 8)
+                   
 
                     VStack(spacing: 8) {
                         Text("Unlock Your Profile")
@@ -196,17 +195,23 @@ struct ProfileView: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
+                        .lineLimit(2)
                         .padding(.bottom, 4)
                 }
-                .padding(24)
+                .padding(.horizontal, 24)
             }
             .shadow(color: .black.opacity(0.10), radius: 24, y: 10)
             
-            .padding(.bottom, 180)
-            .padding(.top, 40)
+            
+            .padding(.top, 20)
+            Spacer(minLength: 70)
+           
 
+           
             
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+       
         
     }
 
@@ -246,4 +251,5 @@ struct ProfileView: View {
 #Preview {
     ProfileView(path: .constant(NavigationPath()))
         .environmentObject(AuthService())
+        .environmentObject(ProfileStore())
 }
