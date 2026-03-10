@@ -18,7 +18,6 @@ struct FirestoreMoodEntry: Codable, Identifiable {
     var labels: [String]
     var contextTags: [String]
     var note: String?
-    var journalPromptId: String?
     var journalAnswer: String?
     var visibility: String
     var media: [MoodMediaItem]

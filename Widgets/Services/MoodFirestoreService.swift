@@ -1,9 +1,11 @@
 //
-//  MoodSaveError.swift
+//  MoodFirestoreService.swift
 //  Widgets
 //
-//  Created by Rosie on 3/8/26.
+//  Created by Rosie on 3/9/26.
 //
+
+
 
 
 import Foundation
@@ -53,14 +55,13 @@ final class MoodFirestoreService: ObservableObject {
             labels: details.labels ?? [selectedLabel.displayName],
             contextTags: details.contextTags ?? [],
             note: emptyToNil(details.note),
-            journalPromptId: emptyToNil(details.journalPromptId),
             journalAnswer: emptyToNil(details.journalAnswer),
             visibility: (details.visibility ?? .private).rawValue,
             media: details.media ?? [],
             weather: details.weather,
             createdAt: details.createdAt ?? now,
             updatedAt: now,
-            deviceId: details.deviceId ?? UIDevice.current.identifierForVendor?.uuidString ?? "unknown-device"
+            deviceId: details.deviceId ?? DeviceID.current()
         )
 
         try documentRef.setData(from: entry)
@@ -90,14 +91,13 @@ final class MoodFirestoreService: ObservableObject {
             labels: details.labels ?? [selectedLabel.displayName],
             contextTags: details.contextTags ?? [],
             note: emptyToNil(details.note),
-            journalPromptId: emptyToNil(details.journalPromptId),
             journalAnswer: emptyToNil(details.journalAnswer),
             visibility: (details.visibility ?? .private).rawValue,
             media: details.media ?? [],
             weather: details.weather,
             createdAt: details.createdAt ?? Date(),
             updatedAt: Date(),
-            deviceId: details.deviceId ?? UIDevice.current.identifierForVendor?.uuidString ?? "unknown-device"
+            deviceId: details.deviceId ?? DeviceID.current()
         )
 
         try documentRef.setData(from: entry, merge: true)

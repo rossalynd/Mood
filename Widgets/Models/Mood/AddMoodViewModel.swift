@@ -17,6 +17,7 @@ final class AddMoodViewModel: ObservableObject {
     // MARK: - Services
     private let weatherService = AppWeatherService()
     private let locationManager = SimpleLocationManager()
+    private let firestoreMoodStore = FirestoreMoodStore()
 
     // MARK: - Core Mood
     @Published var selectedLabel: HKStateOfMind.Label?
@@ -32,7 +33,6 @@ final class AddMoodViewModel: ObservableObject {
     @Published var customMoodTags: [String] = []
 
     @Published var note: String = ""
-    @Published var journalPromptId: String = ""
     @Published var journalAnswer: String = ""
     @Published var visibility: MoodPrivacy = .private
     @Published var expandHero: Bool = false
@@ -134,7 +134,6 @@ final class AddMoodViewModel: ObservableObject {
             labels: selectedLabel.map { [$0.displayName] } ?? [],
             contextTags: Array(selectedContextTags).sorted(),
             note: note.nilIfBlank,
-            journalPromptId: journalPromptId.nilIfBlank,
             journalAnswer: journalAnswer.nilIfBlank,
             visibility: visibility,
             media: mediaItems.isEmpty ? nil : mediaItems,
@@ -275,12 +274,18 @@ final class AddMoodViewModel: ObservableObject {
        
     }
 
-    func saveMood(using moodStore: HealthKitMoodStore) async {
+    func saveMood(using moodStore: HealthKitMoodStore, auth: AuthService) async {
         guard let label = selectedLabel else { return }
 
         didSaveSuccessfully = false
+        errorMessage = nil
+        showError = false
         isSaving = true
         defer { isSaving = false }
+
+        let moodID = makeMoodID()
+        let now = Date()
+        let metadata = makeHealthMetadata(moodID: moodID)
 
         do {
             try await moodStore.requestAuth()
@@ -288,14 +293,24 @@ final class AddMoodViewModel: ObservableObject {
             try await moodStore.saveMood(
                 valence: label.defaultValence,
                 kind: kind,
-                labels: [label]
+                labels: [label],
+                metadata: metadata
             )
+
+            if let userID = auth.currentUser?.uid,
+               let firestoreEntry = makeFirestoreEntry(moodID: moodID, createdAt: now) {
+                do {
+                    try await firestoreMoodStore.saveMood(firestoreEntry, userID: userID)
+                } catch {
+                    print("Firestore save failed, but HealthKit save succeeded:", error)
+                }
+            }
 
             print("App mood details:", draftDetails)
 
             SharedMoodCache.writeLatest(
                 assetName: label.displayName,
-                date: Date(),
+                date: now,
                 color: label.level.color
             )
 
@@ -307,6 +322,70 @@ final class AddMoodViewModel: ObservableObject {
             print("Save failed:", error)
         }
     }
+    
+    
+    private func makeMoodID() -> String {
+        "mood_\(UUID().uuidString.lowercased())"
+    }
+
+    private func makeDeviceID() -> String {
+        DeviceID.current()
+    }
+
+    private func makeHealthMetadata(moodID: String) -> [String: Any] {
+        var metadata: [String: Any] = [
+            HKMetadataKeySyncIdentifier: moodID,
+            HKMetadataKeySyncVersion: 1,
+            MoodMetadataKeys.appMoodID: moodID,
+            MoodMetadataKeys.moodValue: resolvedMoodValue,
+            MoodMetadataKeys.visibility: visibility.rawValue,
+            MoodMetadataKeys.deviceId: makeDeviceID()
+        ]
+
+        if let label = selectedLabel {
+            metadata[MoodMetadataKeys.moodKey] = label.displayName.lowercased()
+            metadata[MoodMetadataKeys.emojiName] = label.displayName
+            metadata[MoodMetadataKeys.labels] = [label.displayName]
+        }
+
+        let tags = Array(selectedContextTags).sorted()
+        if !tags.isEmpty {
+            metadata[MoodMetadataKeys.contextTags] = tags
+        }
+
+        if let note = note.nilIfBlank {
+            metadata[MoodMetadataKeys.note] = note
+        }
+
+        if let journalAnswer = journalAnswer.nilIfBlank {
+            metadata[MoodMetadataKeys.journalAnswer] = journalAnswer
+        }
+
+        return metadata
+    }
+
+    private func makeFirestoreEntry(moodID: String, createdAt: Date) -> FirestoreMoodEntry? {
+        guard let label = selectedLabel else { return nil }
+
+        return FirestoreMoodEntry(
+            id: moodID,
+            moodValue: resolvedMoodValue,
+            moodKey: label.displayName.lowercased(),
+            emoji: label.displayName,
+            labels: [label.displayName],
+            contextTags: Array(selectedContextTags).sorted(),
+            note: note.nilIfBlank,
+            journalAnswer: journalAnswer.nilIfBlank,
+            visibility: visibility.rawValue,
+            media: mediaItems,
+            weather: draftWeather,
+            createdAt: createdAt,
+            updatedAt: createdAt,
+            deviceId: makeDeviceID()
+        )
+    }
+    
+
 
     // MARK: - Helpers
 
@@ -316,3 +395,4 @@ final class AddMoodViewModel: ObservableObject {
         return "\(lat),\(lon)"
     }
 }
+

@@ -12,8 +12,7 @@ struct FriendsView: View {
     var body: some View {
         ZStack {
             LiquidBackdrop().ignoresSafeArea()
-            Text("Friends Placeholder")
-                .font(.title2.weight(.semibold))
+            FriendSearchView()
         }
         .navigationBarHidden(true)
         .safeAreaInset(edge: .top) {

@@ -111,9 +111,10 @@
 				Assets.xcassets,
 				Extensions/LiquidGlassExtension.swift,
 				Features/MoodStreak.swift,
+				Features/SoundPlayer.swift,
+				Models/DeviceID.swift,
 				Models/Mood/MoodData.swift,
 				Services/HKManager.swift,
-				Services/SoundPlayer.swift,
 				SharedMoodCache.swift,
 				UIComponents/LiquidBackdrop.swift,
 				"Views/Add Mood/MoodCell.swift",
@@ -124,7 +125,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				Notifications/UserNotifications.swift,
 			);
 			target = DC9EB2562F4165F1009A05C1 /* Widgets */;
 		};
@@ -146,16 +146,6 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		DC6812FF2F5E4442003A8EED /* Exceptions for "Widgets" folder in "Copy Bundle Resources" phase from "Widgets" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			buildPhase = DC9EB2552F4165F1009A05C1 /* Resources */;
-			membershipExceptions = (
-				Notifications/UserNotifications.swift,
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		DC22BB322F57B3F400CFC1CD /* InstaMood Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -176,7 +166,6 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				DC9EB27A2F4165F3009A05C1 /* Exceptions for "Widgets" folder in "Widgets" target */,
-				DC6812FF2F5E4442003A8EED /* Exceptions for "Widgets" folder in "Copy Bundle Resources" phase from "Widgets" target */,
 				DC9EB2B42F419870009A05C1 /* Exceptions for "Widgets" folder in "WidgetsTargetExtension" target */,
 				DC4CEB4B2F592F9D00E676EF /* Exceptions for "Widgets" folder in "InstaMood Watch App" target */,
 			);

@@ -605,11 +605,21 @@ struct HomeView: View {
         defer { isLoading = false }
 
         do {
+            let moodID = "mood_\(UUID().uuidString.lowercased())"
+
+            let metadata: [String: Any] = [
+                HKMetadataKeySyncIdentifier: moodID,
+                HKMetadataKeySyncVersion: 1,
+                MoodMetadataKeys.appMoodID: moodID,
+                MoodMetadataKeys.deviceId: DeviceID.current()
+                ]
+            
             try await moodStore.requestAuth()
             try await moodStore.saveMood(
                 valence: mood.label.defaultValence,
                 kind: .momentaryEmotion,
-                labels: [mood.label]
+                labels: [mood.label],
+                metadata: metadata
             )
 
             SharedMoodCache.writeLatest(

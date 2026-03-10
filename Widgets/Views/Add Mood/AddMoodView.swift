@@ -14,6 +14,7 @@ import WidgetKit
 struct AddMoodView: View {
     @EnvironmentObject private var moodStore: HealthKitMoodStore
     @EnvironmentObject var auth: AuthService
+    @EnvironmentObject var firestoreMoodStore: MoodFirestoreService
     @Environment(\.dismiss) private var dismiss
 
     @StateObject private var viewModel = AddMoodViewModel()
@@ -62,7 +63,8 @@ struct AddMoodView: View {
                     visibility: viewModel.visibility
                 ) {
                     Task {
-                        await viewModel.saveMood(using: moodStore)
+                        
+                        await viewModel.saveMood(using: moodStore, auth: auth)
                         if viewModel.didSaveSuccessfully {
                             dismiss()
                         }

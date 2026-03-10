@@ -308,7 +308,6 @@ struct AppMoodDetails: Codable, Hashable {
     var labels: [String]?
     var contextTags: [String]?
     var note: String?
-    var journalPromptId: String?
     var journalAnswer: String?
     var visibility: MoodPrivacy?
     var media: [MoodMediaItem]?
@@ -324,7 +323,6 @@ struct AppMoodDetails: Codable, Hashable {
         labels: [String]? = nil,
         contextTags: [String]? = nil,
         note: String? = nil,
-        journalPromptId: String? = nil,
         journalAnswer: String? = nil,
         visibility: MoodPrivacy? = nil,
         media: [MoodMediaItem]? = nil,
@@ -339,7 +337,6 @@ struct AppMoodDetails: Codable, Hashable {
         self.labels = labels
         self.contextTags = contextTags
         self.note = note
-        self.journalPromptId = journalPromptId
         self.journalAnswer = journalAnswer
         self.visibility = visibility
         self.media = media
@@ -362,4 +359,20 @@ struct WeatherSnapshot: Codable, Hashable {
     let recordedAt: Date
     let temperatureC: Double
     let conditionCode: String
+}
+
+
+import HealthKit
+
+enum MoodMetadataKeys {
+    static let appMoodID = "com.rosie.widgets.mood.id"
+    static let moodValue = "com.rosie.widgets.mood.value"
+    static let moodKey = "com.rosie.widgets.mood.key"
+    static let emojiName = "com.rosie.widgets.mood.emoji"
+    static let labels = "com.rosie.widgets.mood.labels"
+    static let contextTags = "com.rosie.widgets.mood.contextTags"
+    static let note = "com.rosie.widgets.mood.note"
+    static let journalAnswer = "com.rosie.widgets.mood.journalAnswer"
+    static let visibility = "com.rosie.widgets.mood.visibility"
+    static let deviceId = "com.rosie.widgets.mood.deviceId"
 }

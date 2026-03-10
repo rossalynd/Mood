@@ -9,12 +9,11 @@
 import Foundation
 import FirebaseFirestore
 
-
-
 struct UserProfile {
     let uid: String
     let email: String?
     let username: String
+    let usernameLower: String
     let displayName: String
     let emotionSymbol: String?
     let moodGoalPerWeek: Int
@@ -41,9 +40,10 @@ extension UserProfile {
         self.uid = uid
         self.email = data["email"] as? String
         self.username = username
+        self.usernameLower = (data["usernameLower"] as? String) ?? username.lowercased()
         self.displayName = displayName
         self.emotionSymbol = data["emotionSymbol"] as? String
-        self.moodGoalPerWeek = moodGoalPerWeek
+        self.moodGoalPerWeek = data["moodGoalPerWeek"] as? Int ?? 0
         self.hasCompletedSetup = hasCompletedSetup
         self.createdAt = createdAtTimestamp.dateValue()
         self.updatedAt = updatedAtTimestamp.dateValue()
@@ -60,6 +60,7 @@ extension UserProfile {
             "uid": uid,
             "email": email as Any,
             "username": username,
+            "usernameLower": usernameLower,
             "displayName": displayName,
             "emotionSymbol": emotionSymbol as Any,
             "moodGoalPerWeek": moodGoalPerWeek,

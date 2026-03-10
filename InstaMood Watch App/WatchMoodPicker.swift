@@ -32,11 +32,20 @@ struct WatchMoodPicker: View {
                 Button {
 
                     Task {
+                        let moodID = "mood_\(UUID().uuidString.lowercased())"
 
+                        let metadata: [String: Any] = [
+                            HKMetadataKeySyncIdentifier: moodID,
+                            HKMetadataKeySyncVersion: 1,
+                            MoodMetadataKeys.appMoodID: moodID,
+                            MoodMetadataKeys.deviceId: DeviceID.current()
+                        ]
+                        
                         try? await moodStore.saveMood(
                             valence: label.defaultValence,
                             kind: .momentaryEmotion,
-                            labels: [label]
+                            labels: [label],
+                            metadata: metadata
                         )
 
                         onSaved()

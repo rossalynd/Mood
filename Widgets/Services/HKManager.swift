@@ -14,6 +14,7 @@ final class HealthKitMoodStore: ObservableObject {
     private let store = HKHealthStore()
     @Published private(set) var moods: [HKStateOfMind] = []
     @Published private(set) var streak: MoodStreak = .init(current: 0, longest: 0, lastCountedDay: nil)
+    
 
     func requestAuth() async throws {
         guard HKHealthStore.isHealthDataAvailable() else { return }
@@ -51,7 +52,10 @@ final class HealthKitMoodStore: ObservableObject {
     
     func saveMood(valence: Double,
                   kind: HKStateOfMind.Kind,
-                  labels: [HKStateOfMind.Label] = []) async throws {
+                  labels: [HKStateOfMind.Label],
+                metadata: [String: Any]
+    
+    ) async throws {
         
 
         let sample = HKStateOfMind(
