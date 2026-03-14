@@ -12,13 +12,24 @@ struct FriendsView: View {
     var body: some View {
         ZStack {
             LiquidBackdrop().ignoresSafeArea()
-            FriendSearchView()
+            
+                
+                
+                FriendsListView()
+                
         }
         .navigationBarHidden(true)
         .safeAreaInset(edge: .top) {
             HStack {
                 Text("Friends").font(.headline)
                 Spacer()
+                Button {
+                    path.append(HomeRoute.pendingFriends)
+                } label: {
+                    Image(systemName: "person.2")
+                        .font(Font.system(size: 30))
+                        .foregroundColor(.secondary)
+                }
             }
             .padding(.horizontal)
             .padding(.bottom, 10)

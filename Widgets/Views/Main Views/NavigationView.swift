@@ -18,6 +18,7 @@ enum HomeRoute: Hashable {
     case recentMoods
     case friends
     case breathing
+    case pendingFriends
 }
 
 
@@ -147,6 +148,8 @@ struct RootShellView: View {
                         BreathingView(path: $path)
                     case .recentMoods:
                         RecentMoodsListView()
+                    case .pendingFriends:
+                        PendingRequestsView()
                     
                     
                     }

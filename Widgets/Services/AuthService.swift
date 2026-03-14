@@ -105,6 +105,8 @@ final class AuthService: ObservableObject {
             errorMessage = error.localizedDescription
         }
     }
+    
+    
 
     func confirmPhoneCode(_ code: String) async {
         errorMessage = nil

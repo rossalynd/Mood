@@ -49,7 +49,7 @@ struct GlassTabItem: View {
 }
 
 #Preview("GlassTabItem Selected") {
-    @Namespace var ns
+    @Previewable @Namespace var ns
 
     return GlassTabItem(
         tab: .home,

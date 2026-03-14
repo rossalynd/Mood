@@ -29,7 +29,12 @@ enum SharedMoodCache {
             .orange: "orange",
             .yellow: "yellow",
             .pink: "pink",
-            .purple: "purple"
+            .purple: "purple",
+            .mint: "mint",
+            .blue: "blue",
+            .red: "red",
+            .green: "green"
+            
         ]
 
         if let colorName = validColors[color] {
@@ -37,6 +42,7 @@ enum SharedMoodCache {
         } else {
             // fallback if somehow an unexpected color appears
             s?.set("yellow", forKey: "latestMoodColor")
+            print()
             print("⚠️ Invalid mood color, defaulting to yellow")
         }
     }
@@ -59,6 +65,10 @@ enum SharedMoodCache {
         case "yellow": return .yellow
         case "pink":   return .pink
         case "purple": return .purple
+        case "mint": return .mint
+        case "red": return .red
+        case "green": return .green
+        case "blue": return .blue
         default:       return .yellow
         }
     }

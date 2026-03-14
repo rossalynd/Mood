@@ -14,6 +14,7 @@ enum ProfileStoreError: LocalizedError {
     case notSignedIn
     case invalidUsername
     case usernameTaken
+    case profileMissing
 
     var errorDescription: String? {
         switch self {
@@ -23,6 +24,8 @@ enum ProfileStoreError: LocalizedError {
             return "Username must be 3–20 characters and use only lowercase letters, numbers, or underscores."
         case .usernameTaken:
             return "That username is already taken."
+        case .profileMissing:
+            return "Unable to load the current profile."
         }
     }
 }
@@ -36,7 +39,7 @@ final class ProfileStore: ObservableObject {
     private let db = Firestore.firestore()
     private var listener: ListenerRegistration?
 
-    private var uid: String? {
+    private var currentUID: String? {
         Auth.auth().currentUser?.uid
     }
 
@@ -44,35 +47,50 @@ final class ProfileStore: ObservableObject {
         listener?.remove()
     }
 
+    // MARK: - Document References
+
+    private func privateUserRef(_ uid: String) -> DocumentReference {
+        db.collection("users").document(uid)
+    }
+
+    private func publicUserRef(_ uid: String) -> DocumentReference {
+        db.collection("publicUsers").document(uid)
+    }
+
+    private func usernameRef(_ usernameLower: String) -> DocumentReference {
+        db.collection("usernames").document(usernameLower)
+    }
+
+    // MARK: - Listening
+
     func startListening(uid: String) {
         stopListening()
 
         isLoading = true
         errorMessage = nil
 
-        listener = db.collection("users").document(uid)
-            .addSnapshotListener { [weak self] snapshot, error in
-                guard let self else { return }
+        listener = privateUserRef(uid).addSnapshotListener { [weak self] snapshot, error in
+            guard let self else { return }
 
-                Task { @MainActor in
-                    self.isLoading = false
+            Task { @MainActor in
+                self.isLoading = false
 
-                    if let error {
-                        self.errorMessage = error.localizedDescription
-                        self.profile = nil
-                        return
-                    }
-
-                    guard let snapshot, snapshot.exists,
-                          let data = snapshot.data() else {
-                        self.profile = nil
-                        return
-                    }
-
-                    self.profile = UserProfile(from: data)
-                    self.errorMessage = nil
+                if let error {
+                    self.errorMessage = error.localizedDescription
+                    self.profile = nil
+                    return
                 }
+
+                guard let snapshot, snapshot.exists, let data = snapshot.data() else {
+                    self.profile = nil
+                    self.errorMessage = nil
+                    return
+                }
+
+                self.profile = UserProfile(from: data)
+                self.errorMessage = nil
             }
+        }
     }
 
     func stopListening() {
@@ -83,10 +101,12 @@ final class ProfileStore: ObservableObject {
         errorMessage = nil
     }
 
+    // MARK: - Loading
+
     func loadCurrentUserProfile() async {
-        guard let uid else {
-            errorMessage = "User is not signed in."
+        guard let uid = currentUID else {
             profile = nil
+            errorMessage = ProfileStoreError.notSignedIn.errorDescription
             return
         }
 
@@ -95,128 +115,208 @@ final class ProfileStore: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let doc = try await db.collection("users").document(uid).getDocument()
+            let snapshot = try await privateUserRef(uid).getDocument()
 
-            guard doc.exists, let data = doc.data() else {
+            guard snapshot.exists, let data = snapshot.data() else {
                 profile = nil
                 return
             }
 
             profile = UserProfile(from: data)
         } catch {
+            profile = nil
             errorMessage = error.localizedDescription
         }
     }
+
+    // MARK: - Account Setup / Initial Save
 
     func saveAccountSetup(_ data: AccountSetupData) async throws {
         guard let user = Auth.auth().currentUser else {
             throw ProfileStoreError.notSignedIn
         }
 
-        let cleanedUsername = data.username
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
+        let cleanedUsername = data.username.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanedDisplayName = data.displayName.trimmingCharacters(in: .whitespacesAndNewlines)
         let usernameLower = cleanedUsername.lowercased()
+        let now = Date()
 
         guard Self.isValidUsername(usernameLower) else {
             throw ProfileStoreError.invalidUsername
         }
 
-        let userRef = db.collection("users").document(user.uid)
-        let usernameRef = db.collection("usernames").document(usernameLower)
-        let now = Date()
+        let privateRef = privateUserRef(user.uid)
+        let publicRef = publicUserRef(user.uid)
+        let newUsernameRef = usernameRef(usernameLower)
 
-        let existingSnapshot = try await userRef.getDocument()
-        let existingData = existingSnapshot.data()
-        let existingProfile = existingData.flatMap(UserProfile.init(from:))
+        let existingSnapshot = try await privateRef.getDocument()
+        let existingProfile = existingSnapshot.data().flatMap(UserProfile.init(from:))
 
         if let existingProfile,
            existingProfile.usernameLower != usernameLower {
-            let oldUsernameRef = db.collection("usernames").document(existingProfile.usernameLower)
+            let oldUsernameRef = usernameRef(existingProfile.usernameLower)
+            let oldUsernameSnapshot = try await oldUsernameRef.getDocument()
 
-            let oldUsernameSnap = try await oldUsernameRef.getDocument()
-            if let oldData = oldUsernameSnap.data(),
+            if let oldData = oldUsernameSnapshot.data(),
                let oldUID = oldData["uid"] as? String,
                oldUID == user.uid {
                 try await oldUsernameRef.delete()
             }
         }
 
-        let usernameSnapshot = try await usernameRef.getDocument()
+        let usernameSnapshot = try await newUsernameRef.getDocument()
         if let usernameData = usernameSnapshot.data(),
            let existingUID = usernameData["uid"] as? String,
            existingUID != user.uid {
             throw ProfileStoreError.usernameTaken
         }
 
-        let profile = UserProfile(
+        let createdAt = existingProfile?.createdAt ?? now
+        let allowsFriendRequests = existingProfile?.allowsFriendRequests ?? true
+        let isDiscoverable = existingProfile?.isDiscoverable ?? true
+
+        let privateProfile = UserProfile(
             uid: user.uid,
             email: user.email,
             username: cleanedUsername,
             usernameLower: usernameLower,
-            displayName: data.displayName,
+            displayName: cleanedDisplayName,
             emotionSymbol: data.emotionSymbol,
             moodGoalPerWeek: data.moodGoalPerWeek,
             reminderTimes: sanitizeReminderDates(data.reminderTimes),
             hasCompletedSetup: true,
-            createdAt: existingProfile?.createdAt ?? now,
-            updatedAt: now
+            createdAt: createdAt,
+            updatedAt: now,
+            allowsFriendRequests: allowsFriendRequests,
+            isDiscoverable: isDiscoverable
+        )
+
+        let sharedProfile = PublicUserProfile(
+            uid: user.uid,
+            username: cleanedUsername,
+            usernameLower: usernameLower,
+            displayName: cleanedDisplayName,
+            emotionSymbol: data.emotionSymbol,
+            createdAt: createdAt,
+            updatedAt: now,
+            isDiscoverable: isDiscoverable
         )
 
         let batch = db.batch()
 
-        batch.setData(profile.firestoreData(), forDocument: userRef, merge: true)
+        batch.setData(privateProfile.firestoreData(), forDocument: privateRef, merge: true)
+        batch.setData(sharedProfile.firestoreData(), forDocument: publicRef, merge: true)
         batch.setData([
             "uid": user.uid,
             "username": cleanedUsername,
             "usernameLower": usernameLower,
-            "updatedAt": Timestamp(date: now),
-            "createdAt": usernameSnapshot.data()?["createdAt"] ?? Timestamp(date: now)
-        ], forDocument: usernameRef, merge: true)
+            "createdAt": usernameSnapshot.data()?["createdAt"] ?? Timestamp(date: now),
+            "updatedAt": Timestamp(date: now)
+        ], forDocument: newUsernameRef, merge: true)
 
         try await batch.commit()
-
-        self.profile = profile
+        profile = privateProfile
+        errorMessage = nil
     }
+
+    // MARK: - Updates
 
     func updateProfileFields(
         displayName: String? = nil,
         emotionSymbol: String? = nil,
         moodGoalPerWeek: Int? = nil,
-        reminderTimes: [Date]? = nil
+        reminderTimes: [Date]? = nil,
+        allowsFriendRequests: Bool? = nil,
+        isDiscoverable: Bool? = nil
     ) async throws {
-        guard let uid else {
+        guard currentUID != nil else {
             throw ProfileStoreError.notSignedIn
         }
 
-        var updates: [String: Any] = [
-            "updatedAt": Timestamp(date: Date())
-        ]
-
-        if let displayName {
-            updates["displayName"] = displayName
+        let currentProfile: UserProfile
+        if let profile {
+            currentProfile = profile
+        } else {
+            await loadCurrentUserProfile()
+            guard let loadedProfile = profile else {
+                throw ProfileStoreError.profileMissing
+            }
+            currentProfile = loadedProfile
         }
 
-        if let emotionSymbol {
-            updates["emotionSymbol"] = emotionSymbol
-        }
-
-        if let moodGoalPerWeek {
-            updates["moodGoalPerWeek"] = moodGoalPerWeek
-        }
-
-        if let reminderTimes {
-            updates["reminderTimes"] = sanitizeReminderDates(reminderTimes).map { Timestamp(date: $0) }
-        }
-
-        try await db.collection("users").document(uid).setData(updates, merge: true)
-        await loadCurrentUserProfile()
+        try await updateUsingCurrentProfile(
+            currentProfile,
+            displayName: displayName,
+            emotionSymbol: emotionSymbol,
+            moodGoalPerWeek: moodGoalPerWeek,
+            reminderTimes: reminderTimes,
+            allowsFriendRequests: allowsFriendRequests,
+            isDiscoverable: isDiscoverable
+        )
     }
+
+    private func updateUsingCurrentProfile(
+        _ current: UserProfile,
+        displayName: String?,
+        emotionSymbol: String?,
+        moodGoalPerWeek: Int?,
+        reminderTimes: [Date]?,
+        allowsFriendRequests: Bool?,
+        isDiscoverable: Bool?
+    ) async throws {
+        let now = Date()
+
+        let nextDisplayName = displayName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? current.displayName
+        let nextEmotionSymbol = emotionSymbol ?? current.emotionSymbol
+        let nextMoodGoalPerWeek = moodGoalPerWeek ?? current.moodGoalPerWeek
+        let nextReminderTimes = reminderTimes.map(sanitizeReminderDates) ?? current.reminderTimes
+        let nextAllowsFriendRequests = allowsFriendRequests ?? current.allowsFriendRequests
+        let nextIsDiscoverable = isDiscoverable ?? current.isDiscoverable
+
+        let updatedPrivateProfile = UserProfile(
+            uid: current.uid,
+            email: current.email,
+            username: current.username,
+            usernameLower: current.usernameLower,
+            displayName: nextDisplayName,
+            emotionSymbol: nextEmotionSymbol,
+            moodGoalPerWeek: nextMoodGoalPerWeek,
+            reminderTimes: nextReminderTimes,
+            hasCompletedSetup: current.hasCompletedSetup,
+            createdAt: current.createdAt,
+            updatedAt: now,
+            allowsFriendRequests: nextAllowsFriendRequests,
+            isDiscoverable: nextIsDiscoverable
+        )
+
+        let updatedPublicProfile = PublicUserProfile(
+            uid: current.uid,
+            username: current.username,
+            usernameLower: current.usernameLower,
+            displayName: nextDisplayName,
+            emotionSymbol: nextEmotionSymbol,
+            createdAt: current.createdAt,
+            updatedAt: now,
+            isDiscoverable: nextIsDiscoverable
+        )
+
+        let batch = db.batch()
+        batch.setData(updatedPrivateProfile.firestoreData(), forDocument: privateUserRef(current.uid), merge: true)
+        batch.setData(updatedPublicProfile.firestoreData(), forDocument: publicUserRef(current.uid), merge: true)
+
+        try await batch.commit()
+        profile = updatedPrivateProfile
+        errorMessage = nil
+    }
+
+    // MARK: - Helpers
 
     private func sanitizeReminderDates(_ dates: [Date]) -> [Date] {
         let min = Date(timeIntervalSince1970: 0)
         let max = Date(timeIntervalSince1970: 253402300799)
-        return dates.filter { $0 >= min && $0 <= max }.sorted()
+        return dates
+            .filter { $0 >= min && $0 <= max }
+            .sorted()
     }
 
     private static func isValidUsername(_ name: String) -> Bool {

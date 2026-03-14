@@ -6,8 +6,6 @@
 //
 
 
-
-
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
@@ -41,14 +39,17 @@ final class MoodFirestoreService: ObservableObject {
         }
 
         let now = Date()
-        let documentRef = db
+        let moodID = db
             .collection("users")
             .document(uid)
             .collection("moods")
             .document()
+            .documentID
+
+        let resolvedVisibility = details.visibility ?? .private
 
         let entry = FirestoreMoodEntry(
-            id: documentRef.documentID,
+            id: moodID,
             moodValue: details.moodValue ?? selectedLabel.level.rawValue,
             moodKey: details.moodKey ?? selectedLabel.displayName.lowercased(),
             emoji: details.emojiName ?? selectedLabel.displayName,
@@ -56,7 +57,7 @@ final class MoodFirestoreService: ObservableObject {
             contextTags: details.contextTags ?? [],
             note: emptyToNil(details.note),
             journalAnswer: emptyToNil(details.journalAnswer),
-            visibility: (details.visibility ?? .private).rawValue,
+            visibility: resolvedVisibility.rawValue,
             media: details.media ?? [],
             weather: details.weather,
             createdAt: details.createdAt ?? now,
@@ -64,8 +65,11 @@ final class MoodFirestoreService: ObservableObject {
             deviceId: details.deviceId ?? DeviceID.current()
         )
 
-        try documentRef.setData(from: entry)
-        return documentRef.documentID
+        print("Selected visibility:", resolvedVisibility.rawValue)
+        print("Details visibility:", details.visibility?.rawValue ?? "nil")
+
+        try await writeMood(entry, visibility: resolvedVisibility, for: uid, merge: false)
+        return moodID
     }
 
     func updateMoodEntry(
@@ -77,11 +81,8 @@ final class MoodFirestoreService: ObservableObject {
             throw MoodSaveError.userNotSignedIn
         }
 
-        let documentRef = db
-            .collection("users")
-            .document(uid)
-            .collection("moods")
-            .document(moodId)
+        let existingCreatedAt = try await fetchExistingCreatedAt(uid: uid, moodId: moodId)
+        let resolvedVisibility = details.visibility ?? .private
 
         let entry = FirestoreMoodEntry(
             id: moodId,
@@ -92,15 +93,101 @@ final class MoodFirestoreService: ObservableObject {
             contextTags: details.contextTags ?? [],
             note: emptyToNil(details.note),
             journalAnswer: emptyToNil(details.journalAnswer),
-            visibility: (details.visibility ?? .private).rawValue,
+            visibility: resolvedVisibility.rawValue,
             media: details.media ?? [],
             weather: details.weather,
-            createdAt: details.createdAt ?? Date(),
+            createdAt: details.createdAt ?? existingCreatedAt ?? Date(),
             updatedAt: Date(),
             deviceId: details.deviceId ?? DeviceID.current()
         )
 
-        try documentRef.setData(from: entry, merge: true)
+        try await writeMood(entry, visibility: resolvedVisibility, for: uid, merge: true)
+    }
+
+    private func writeMood(
+        _ entry: FirestoreMoodEntry,
+        visibility: MoodPrivacy,
+        for uid: String,
+        merge: Bool
+    ) async throws {
+        let moodId = entry.id
+
+        let privateRef = privateMoodRef(uid: uid, moodId: moodId)
+        let publicParentRef = db.collection("publicMoodSummaries").document(uid)
+        let publicRef = publicParentRef.collection("moods").document(moodId)
+        let friendParentRef = db.collection("friendMoodSummaries").document(uid)
+        let friendRef = friendParentRef.collection("moods").document(moodId)
+
+        let batch = db.batch()
+
+        let privateData = try Firestore.Encoder().encode(entry)
+        if merge {
+            batch.setData(privateData, forDocument: privateRef, merge: true)
+        } else {
+            batch.setData(privateData, forDocument: privateRef)
+        }
+
+        let summary = SharedMoodSummary.from(entry, ownerUID: uid)
+
+        switch visibility {
+        case .private:
+            batch.deleteDocument(publicRef)
+            batch.deleteDocument(friendRef)
+
+        case .friends:
+            batch.deleteDocument(publicRef)
+
+            batch.setData([
+                "ownerUID": uid,
+                "updatedAt": Timestamp(date: entry.updatedAt)
+            ], forDocument: friendParentRef, merge: true)
+
+            batch.setData(summary.firestoreData(), forDocument: friendRef)
+
+        case .public:
+            batch.setData([
+                "ownerUID": uid,
+                "updatedAt": Timestamp(date: entry.updatedAt)
+            ], forDocument: publicParentRef, merge: true)
+
+            batch.setData([
+                "ownerUID": uid,
+                "updatedAt": Timestamp(date: entry.updatedAt)
+            ], forDocument: friendParentRef, merge: true)
+
+            batch.setData(summary.firestoreData(), forDocument: publicRef)
+            batch.setData(summary.firestoreData(), forDocument: friendRef)
+        }
+
+        print("Writing mood with visibility:", visibility.rawValue)
+
+        do {
+            try await batch.commit()
+            print("Batch commit succeeded for mood:", moodId)
+        } catch {
+            print("Batch commit failed for mood \(moodId):", error)
+            throw error
+        }
+    }
+
+    private func fetchExistingCreatedAt(uid: String, moodId: String) async throws -> Date? {
+        let snapshot = try await privateMoodRef(uid: uid, moodId: moodId).getDocument()
+        guard
+            snapshot.exists,
+            let data = snapshot.data(),
+            let createdAt = data["createdAt"] as? Timestamp
+        else {
+            return nil
+        }
+
+        return createdAt.dateValue()
+    }
+
+    private func privateMoodRef(uid: String, moodId: String) -> DocumentReference {
+        db.collection("users")
+            .document(uid)
+            .collection("moods")
+            .document(moodId)
     }
 
     private func emptyToNil(_ value: String?) -> String? {
@@ -109,5 +196,42 @@ final class MoodFirestoreService: ObservableObject {
             return nil
         }
         return trimmed
+    }
+}
+
+struct SharedMoodSummary: Codable {
+    let id: String
+    let ownerUID: String
+    let moodValue: Int
+    let moodKey: String
+    let emoji: String
+    let createdAt: Date
+    let updatedAt: Date
+    let visibility: String
+
+    static func from(_ entry: FirestoreMoodEntry, ownerUID: String) -> SharedMoodSummary {
+        SharedMoodSummary(
+            id: entry.id,
+            ownerUID: ownerUID,
+            moodValue: entry.moodValue,
+            moodKey: entry.moodKey,
+            emoji: entry.emoji,
+            createdAt: entry.createdAt,
+            updatedAt: entry.updatedAt,
+            visibility: entry.visibility
+        )
+    }
+
+    func firestoreData() -> [String: Any] {
+        [
+            "id": id,
+            "ownerUID": ownerUID,
+            "moodValue": moodValue,
+            "moodKey": moodKey,
+            "emoji": emoji,
+            "createdAt": Timestamp(date: createdAt),
+            "updatedAt": Timestamp(date: updatedAt),
+            "visibility": visibility
+        ]
     }
 }

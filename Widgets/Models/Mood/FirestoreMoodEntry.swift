@@ -10,7 +10,7 @@ import Foundation
 import FirebaseFirestore
 
 struct FirestoreMoodEntry: Codable, Identifiable {
-    @DocumentID var id: String?
+    var id: String
 
     var moodValue: Int
     var moodKey: String

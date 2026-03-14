@@ -22,7 +22,6 @@ enum MoodSort: Hashable {
 struct MoodItem: Identifiable, Hashable {
     let label: HKStateOfMind.Label
     var id: Int { label.rawValue }
-
     var displayName: String { label.displayName }
     var emoji: Image { label.emoji }
     var level: MoodLevel { label.level }
@@ -218,11 +217,11 @@ enum MoodPrivacy: String, CaseIterable, Codable, Identifiable {
     var displayName: String {
         switch self {
         case .private:
-            return "Private"
+            return "private"
         case .friends:
-            return "Friends"
+            return "friends"
         case .public:
-            return "Public"
+            return "public"
         }
     }
 

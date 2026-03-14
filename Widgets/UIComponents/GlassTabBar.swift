@@ -35,8 +35,9 @@ struct GlassTabBar: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 60, style: .continuous)
-                .stroke(.white.opacity(0.15), lineWidth: 1)
+                .stroke(.white.opacity(0.05), lineWidth: 1)
         )
+        .glassEffect()
         .shadow(color: .black.opacity(0.14), radius: 18, x: 0, y: 10)
         .accessibilityElement(children: .contain)
     }

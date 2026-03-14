@@ -5,6 +5,12 @@
 //  Created by Rosie on 3/9/26.
 //
 
+//
+//  FriendSearchView.swift
+//  Widgets
+//
+//  Created by Rosie on 3/9/26.
+//
 
 import SwiftUI
 
@@ -24,7 +30,6 @@ struct FriendSearchView: View {
 
                     searchTask = Task {
                         try? await Task.sleep(nanoseconds: 300_000_000)
-
                         guard !Task.isCancelled else { return }
                         await viewModel.search()
                     }
@@ -67,11 +72,7 @@ struct FriendSearchView: View {
 
                         Spacer()
 
-                        Button("Add") {
-                            // TODO: add friend request action
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
+                        relationshipButton(for: user)
                     }
                     .listRowBackground(Color.clear)
                 }
@@ -82,6 +83,52 @@ struct FriendSearchView: View {
         .padding()
         .onDisappear {
             searchTask?.cancel()
+        }
+    }
+
+    @ViewBuilder
+    private func relationshipButton(for user: UsernameLookup) -> some View {
+        switch user.relationshipState {
+        case .me:
+            Text("You")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+        case .none:
+            Button("Add") {
+                Task {
+                    
+                    await viewModel.sendRequest(to: user) }
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+
+        case .pendingOutgoing:
+            Button("Pending") {
+                Task { await viewModel.cancelRequest(to: user) }
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+
+        case .pendingIncoming:
+            Menu {
+                Button("Accept") {
+                    Task { await viewModel.acceptRequest(from: user) }
+                }
+
+                Button("Decline", role: .destructive) {
+                    Task { await viewModel.declineRequest(from: user) }
+                }
+            } label: {
+                Text("Respond")
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+
+        case .friends:
+            Text("Friends")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.green)
         }
     }
 }

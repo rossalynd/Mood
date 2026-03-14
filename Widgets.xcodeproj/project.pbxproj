@@ -36,12 +36,19 @@
 			remoteGlobalIDString = DC22BB302F57B3F400CFC1CD;
 			remoteInfo = "InstaMood Watch App";
 		};
-		DC22BB4F2F57B3F600CFC1CD /* PBXContainerItemProxy */ = {
+		DC61AD222F5FECCD0097957A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = DC9EB24F2F4165F1009A05C1 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = DC22BB302F57B3F400CFC1CD;
 			remoteInfo = "InstaMood Watch App";
+		};
+		DC61AD242F5FECDB0097957A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC9EB24F2F4165F1009A05C1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DC9EB2892F41661B009A05C1;
+			remoteInfo = WidgetsTargetExtension;
 		};
 		DC9EB2692F4165F3009A05C1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -56,13 +63,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = DC9EB2562F4165F1009A05C1;
 			remoteInfo = Widgets;
-		};
-		DC9EB29E2F41661D009A05C1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = DC9EB24F2F4165F1009A05C1 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = DC9EB2892F41661B009A05C1;
-			remoteInfo = WidgetsTargetExtension;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -378,8 +378,8 @@
 			buildRules = (
 			);
 			dependencies = (
-				DC9EB29F2F41661D009A05C1 /* PBXTargetDependency */,
-				DC22BB502F57B3F600CFC1CD /* PBXTargetDependency */,
+				DC61AD252F5FECDB0097957A /* PBXTargetDependency */,
+				DC61AD232F5FECCD0097957A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				DC9EB2592F4165F1009A05C1 /* Widgets */,
@@ -647,10 +647,15 @@
 			target = DC22BB302F57B3F400CFC1CD /* InstaMood Watch App */;
 			targetProxy = DC22BB482F57B3F600CFC1CD /* PBXContainerItemProxy */;
 		};
-		DC22BB502F57B3F600CFC1CD /* PBXTargetDependency */ = {
+		DC61AD232F5FECCD0097957A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = DC22BB302F57B3F400CFC1CD /* InstaMood Watch App */;
-			targetProxy = DC22BB4F2F57B3F600CFC1CD /* PBXContainerItemProxy */;
+			targetProxy = DC61AD222F5FECCD0097957A /* PBXContainerItemProxy */;
+		};
+		DC61AD252F5FECDB0097957A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DC9EB2892F41661B009A05C1 /* WidgetsTargetExtension */;
+			targetProxy = DC61AD242F5FECDB0097957A /* PBXContainerItemProxy */;
 		};
 		DC9EB26A2F4165F3009A05C1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -661,11 +666,6 @@
 			isa = PBXTargetDependency;
 			target = DC9EB2562F4165F1009A05C1 /* Widgets */;
 			targetProxy = DC9EB2732F4165F3009A05C1 /* PBXContainerItemProxy */;
-		};
-		DC9EB29F2F41661D009A05C1 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = DC9EB2892F41661B009A05C1 /* WidgetsTargetExtension */;
-			targetProxy = DC9EB29E2F41661D009A05C1 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

@@ -9,6 +9,7 @@
 import Foundation
 import FirebaseFirestore
 
+// MARK: - Private Profile (users/{uid})
 struct UserProfile {
     let uid: String
     let email: String?
@@ -21,6 +22,8 @@ struct UserProfile {
     let hasCompletedSetup: Bool
     let createdAt: Date
     let updatedAt: Date
+    let allowsFriendRequests: Bool
+    let isDiscoverable: Bool
 }
 
 extension UserProfile {
@@ -29,7 +32,6 @@ extension UserProfile {
             let uid = data["uid"] as? String,
             let username = data["username"] as? String,
             let displayName = data["displayName"] as? String,
-            let moodGoalPerWeek = data["moodGoalPerWeek"] as? Int,
             let hasCompletedSetup = data["hasCompletedSetup"] as? Bool,
             let createdAtTimestamp = data["createdAt"] as? Timestamp,
             let updatedAtTimestamp = data["updatedAt"] as? Timestamp
@@ -47,6 +49,8 @@ extension UserProfile {
         self.hasCompletedSetup = hasCompletedSetup
         self.createdAt = createdAtTimestamp.dateValue()
         self.updatedAt = updatedAtTimestamp.dateValue()
+        self.allowsFriendRequests = data["allowsFriendRequests"] as? Bool ?? true
+        self.isDiscoverable = data["isDiscoverable"] as? Bool ?? true
 
         if let reminderTimestamps = data["reminderTimes"] as? [Timestamp] {
             self.reminderTimes = reminderTimestamps.map { $0.dateValue() }
@@ -67,7 +71,57 @@ extension UserProfile {
             "reminderTimes": reminderTimes.map { Timestamp(date: $0) },
             "hasCompletedSetup": hasCompletedSetup,
             "createdAt": Timestamp(date: createdAt),
-            "updatedAt": Timestamp(date: updatedAt)
+            "updatedAt": Timestamp(date: updatedAt),
+            "allowsFriendRequests": allowsFriendRequests,
+            "isDiscoverable": isDiscoverable
+        ]
+    }
+}
+
+// MARK: - Shared/Public Profile (publicUsers/{uid})
+struct PublicUserProfile {
+    let uid: String
+    let username: String
+    let usernameLower: String
+    let displayName: String
+    let emotionSymbol: String?
+    let createdAt: Date
+    let updatedAt: Date
+    let isDiscoverable: Bool
+}
+
+extension PublicUserProfile {
+    init?(from data: [String: Any]) {
+        guard
+            let uid = data["uid"] as? String,
+            let username = data["username"] as? String,
+            let displayName = data["displayName"] as? String,
+            let createdAtTimestamp = data["createdAt"] as? Timestamp,
+            let updatedAtTimestamp = data["updatedAt"] as? Timestamp
+        else {
+            return nil
+        }
+
+        self.uid = uid
+        self.username = username
+        self.usernameLower = (data["usernameLower"] as? String) ?? username.lowercased()
+        self.displayName = displayName
+        self.emotionSymbol = data["emotionSymbol"] as? String
+        self.createdAt = createdAtTimestamp.dateValue()
+        self.updatedAt = updatedAtTimestamp.dateValue()
+        self.isDiscoverable = data["isDiscoverable"] as? Bool ?? true
+    }
+
+    func firestoreData() -> [String: Any] {
+        [
+            "uid": uid,
+            "username": username,
+            "usernameLower": usernameLower,
+            "displayName": displayName,
+            "emotionSymbol": emotionSymbol as Any,
+            "createdAt": Timestamp(date: createdAt),
+            "updatedAt": Timestamp(date: updatedAt),
+            "isDiscoverable": isDiscoverable
         ]
     }
 }

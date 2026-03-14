@@ -5,6 +5,7 @@
 //  Created by Rosie on 3/8/26.
 //
 
+
 import SwiftUI
 import HealthKit
 import WidgetKit
@@ -17,7 +18,7 @@ final class AddMoodViewModel: ObservableObject {
     // MARK: - Services
     private let weatherService = AppWeatherService()
     private let locationManager = SimpleLocationManager()
-    private let firestoreMoodStore = FirestoreMoodStore()
+    private let moodService = MoodFirestoreService()
 
     // MARK: - Core Mood
     @Published var selectedLabel: HKStateOfMind.Label?
@@ -43,7 +44,6 @@ final class AddMoodViewModel: ObservableObject {
     @Published var newVideoURL: String = ""
 
     // MARK: - Weather
-
     @Published var weatherTempC: Double?
     @Published var weatherConditionCode: String = ""
     @Published var weatherLocationBucket: String = ""
@@ -57,7 +57,6 @@ final class AddMoodViewModel: ObservableObject {
     @Published var showError = false
     @Published var didSaveSuccessfully = false
 
-    
     let cardRadius: CGFloat = 24
 
     let moodColumns: [GridItem] = [
@@ -112,12 +111,7 @@ final class AddMoodViewModel: ObservableObject {
     }
 
     var draftWeather: WeatherSnapshot? {
-        guard
-            
-            let weatherTempC
-        else {
-            return nil
-        }
+        guard let weatherTempC else { return nil }
 
         return WeatherSnapshot(
             recordedAt: Date(),
@@ -217,7 +211,6 @@ final class AddMoodViewModel: ObservableObject {
     }
 
     func loadWeather(for location: CLLocation?) async {
-        
         guard let location else {
             weatherErrorMessage = "Current location is unavailable."
             return
@@ -225,10 +218,10 @@ final class AddMoodViewModel: ObservableObject {
 
         isLoadingWeather = true
         weatherErrorMessage = nil
+        defer { isLoadingWeather = false }
 
         do {
             let snapshot = try await weatherService.fetchSnapshot(for: location)
-
             weatherTempC = snapshot.temperatureC
             weatherConditionCode = snapshot.conditionCode
             weatherLocationBucket = Self.makeLocationBucket(from: location)
@@ -236,42 +229,35 @@ final class AddMoodViewModel: ObservableObject {
             weatherErrorMessage = error.localizedDescription
             print("Weather load failed:", error)
         }
-
-        isLoadingWeather = false
     }
-    
-    
+
     func loadWeather() async {
-            guard !isLoadingWeather else { return }
+        guard !isLoadingWeather else { return }
 
-            isLoadingWeather = true
-            weatherErrorMessage = nil
+        isLoadingWeather = true
+        weatherErrorMessage = nil
+        defer { isLoadingWeather = false }
 
-            do {
-                let location = try await locationManager.requestCurrentLocation()
-                let weather = try await weatherService.fetchSnapshot(for: location)
+        do {
+            let location = try await locationManager.requestCurrentLocation()
+            let weather = try await weatherService.fetchSnapshot(for: location)
 
-                weatherConditionCode = weather.conditionCode
-                weatherTempC = weather.temperatureC
-            } catch {
-                weatherErrorMessage = error.localizedDescription
-                weatherConditionCode = "Unavailable"
-                weatherTempC = nil
-            }
-
-            isLoadingWeather = false
+            weatherConditionCode = weather.conditionCode
+            weatherTempC = weather.temperatureC
+            weatherLocationBucket = Self.makeLocationBucket(from: location)
+        } catch {
+            weatherErrorMessage = error.localizedDescription
+            weatherConditionCode = "Unavailable"
+            weatherTempC = nil
         }
-
+    }
 
     func refreshWeatherIfNeeded(for location: CLLocation?) async {
-        
         await loadWeather(for: location)
     }
 
     func setIncludeWeather(_ location: CLLocation?) async {
-        
-            await loadWeather(for: location)
-       
+        await loadWeather(for: location)
     }
 
     func saveMood(using moodStore: HealthKitMoodStore, auth: AuthService) async {
@@ -297,16 +283,19 @@ final class AddMoodViewModel: ObservableObject {
                 metadata: metadata
             )
 
-            if let userID = auth.currentUser?.uid,
-               let firestoreEntry = makeFirestoreEntry(moodID: moodID, createdAt: now) {
+            if auth.currentUser?.uid != nil {
                 do {
-                    try await firestoreMoodStore.saveMood(firestoreEntry, userID: userID)
+                    try await moodService.saveMoodEntry(
+                        selectedLabel: label,
+                        details: appMoodDetails(createdAt: now, updatedAt: now)
+                    )
                 } catch {
-                    print("Firestore save failed, but HealthKit save succeeded:", error)
+                    errorMessage = "Firestore save failed: \(error.localizedDescription)"
+                    showError = true
+                    print("Firestore save failed:", error)
+                    return
                 }
             }
-
-            print("App mood details:", draftDetails)
 
             SharedMoodCache.writeLatest(
                 assetName: label.displayName,
@@ -322,8 +311,27 @@ final class AddMoodViewModel: ObservableObject {
             print("Save failed:", error)
         }
     }
-    
-    
+
+    // MARK: - Builders
+
+    private func appMoodDetails(createdAt: Date, updatedAt: Date) -> AppMoodDetails {
+        AppMoodDetails(
+            moodValue: resolvedMoodValue,
+            moodKey: selectedLabel?.displayName.lowercased(),
+            emojiName: selectedLabel?.displayName,
+            labels: selectedLabel.map { [$0.displayName] } ?? [],
+            contextTags: Array(selectedContextTags).sorted(),
+            note: note.nilIfBlank,
+            journalAnswer: journalAnswer.nilIfBlank,
+            visibility: visibility,
+            media: mediaItems.isEmpty ? nil : mediaItems,
+            weather: draftWeather,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            deviceId: makeDeviceID()
+        )
+    }
+
     private func makeMoodID() -> String {
         "mood_\(UUID().uuidString.lowercased())"
     }
@@ -364,29 +372,6 @@ final class AddMoodViewModel: ObservableObject {
         return metadata
     }
 
-    private func makeFirestoreEntry(moodID: String, createdAt: Date) -> FirestoreMoodEntry? {
-        guard let label = selectedLabel else { return nil }
-
-        return FirestoreMoodEntry(
-            id: moodID,
-            moodValue: resolvedMoodValue,
-            moodKey: label.displayName.lowercased(),
-            emoji: label.displayName,
-            labels: [label.displayName],
-            contextTags: Array(selectedContextTags).sorted(),
-            note: note.nilIfBlank,
-            journalAnswer: journalAnswer.nilIfBlank,
-            visibility: visibility.rawValue,
-            media: mediaItems,
-            weather: draftWeather,
-            createdAt: createdAt,
-            updatedAt: createdAt,
-            deviceId: makeDeviceID()
-        )
-    }
-    
-
-
     // MARK: - Helpers
 
     private static func makeLocationBucket(from location: CLLocation) -> String {
@@ -395,4 +380,3 @@ final class AddMoodViewModel: ObservableObject {
         return "\(lat),\(lon)"
     }
 }
-

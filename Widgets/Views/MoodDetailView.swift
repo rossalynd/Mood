@@ -5,7 +5,6 @@
 //  Created by Rosie on 3/10/26.
 //
 
-
 import SwiftUI
 
 @available(iOS 26.0, *)
@@ -13,14 +12,7 @@ struct MoodDetailView: View {
     let mood: AppMoodDetails
 
     @State private var isEditing = false
-
-    // Editable placeholders
-    @State private var editedMoodKey: String = ""
-    @State private var editedMoodValue: String = ""
-    @State private var editedNote: String = ""
-    @State private var editedJournalAnswer: String = ""
-    @State private var editedLabels: [String] = []
-    @State private var editedContextTags: [String] = []
+    @State private var draft = EditDraft()
 
     var body: some View {
         ZStack {
@@ -29,101 +21,105 @@ struct MoodDetailView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 18) {
-                    headerCard
+                    MoodHeroCard(display: display)
 
-                    detailsSection(
-                        title: "Mood"
-                    ) {
-                        if isEditing {
-                            VStack(spacing: 12) {
-                                premiumTextField(
-                                    title: "Mood Name",
-                                    text: $editedMoodKey,
-                                    placeholder: "How were you feeling?"
-                                )
+                    MoodQuickStatsRow(display: display)
 
-                                premiumTextField(
-                                    title: "Mood Value",
-                                    text: $editedMoodValue,
-                                    placeholder: "Mood intensity"
-                                )
-                            }
-                        } else {
-                            infoRow("Mood Name", value: mood.moodKey?.formattedMoodTitle ?? "Unknown")
-                            infoRow("Mood Value", value: mood.moodValue.map(String.init) ?? "—")
-                        }
-                    }
-
-                    if !(currentLabels.isEmpty) || isEditing {
-                        detailsSection(title: "Labels") {
-                            editableChipSection(
-                                items: $editedLabels,
-                                fallbackItems: currentLabels,
-                                placeholder: "Add label",
-                                isEditing: isEditing
+                    if !display.labels.isEmpty {
+                        MoodDetailSection(title: "Mood Labels", systemImage: "sparkles") {
+                            MoodTagCloud(
+                                tags: display.labels,
+                                tint: display.level.color.opacity(0.16)
                             )
                         }
                     }
 
-                    if !(currentContextTags.isEmpty) || isEditing {
-                        detailsSection(title: "Context") {
-                            editableChipSection(
-                                items: $editedContextTags,
-                                fallbackItems: currentContextTags,
-                                placeholder: "Add context tag",
-                                isEditing: isEditing
-                            )
-                        }
-                    }
-
-                    if mood.note?.isEmpty == false || isEditing {
-                        detailsSection(title: "Note") {
+                    if !display.contextTags.isEmpty || isEditing {
+                        MoodDetailSection(title: "Context", systemImage: "square.grid.2x2.fill") {
                             if isEditing {
-                                premiumTextEditor(
-                                    text: $editedNote,
-                                    placeholder: "Write a note..."
-                                )
+                                EditableContextTagsSection(draft: $draft)
                             } else {
-                                textBlock(mood.note ?? "No note")
+                                MoodOptionalTagContent(tags: display.contextTags)
                             }
                         }
                     }
 
-                    if mood.journalAnswer?.isEmpty == false || isEditing {
-                        detailsSection(title: "Journal") {
+                    if display.hasNote || isEditing {
+                        MoodDetailSection(title: "Note", systemImage: "note.text") {
                             if isEditing {
-                                premiumTextEditor(
-                                    text: $editedJournalAnswer,
-                                    placeholder: "Reflect on what was happening..."
+                                PremiumTextEditor(
+                                    text: $draft.note,
+                                    placeholder: "Add a note..."
                                 )
                             } else {
-                                textBlock(mood.journalAnswer ?? "No journal entry")
+                                MoodBodyText(display.note)
                             }
                         }
                     }
 
-                    if let visibility = mood.visibility {
-                        detailsSection(title: "Visibility") {
-                            infoRow("Privacy", value: String(describing: visibility).capitalized)
+                    if display.hasJournal || isEditing {
+                        MoodDetailSection(title: "Journal", systemImage: "book.pages.fill") {
+                            if isEditing {
+                                PremiumTextEditor(
+                                    text: $draft.journalAnswer,
+                                    placeholder: "Write your reflection..."
+                                )
+                            } else {
+                                MoodBodyText(display.journalAnswer)
+                            }
                         }
                     }
 
-                    if let weather = mood.weather {
-                        weatherSection(weather)
+                    if display.visibility != nil || isEditing {
+                        MoodDetailSection(title: "Visibility", systemImage: "eye.fill") {
+                            if isEditing {
+                                VisibilityEditor(selection: $draft.visibility)
+                            } else if let visibility = display.visibility {
+                                VisibilityDisplayRow(visibility: visibility)
+                            } else {
+                                MoodEmptyStateText("No visibility set")
+                            }
+                        }
                     }
 
-                    if let media = mood.media, !media.isEmpty {
-                        mediaSection(media)
+                    if let weather = display.weather {
+                        MoodDetailSection(title: "Weather", systemImage: "cloud.sun.fill") {
+                            WeatherDetailContent(weather: weather)
+                        }
                     }
 
-                    detailsSection(title: "Details") {
-                        infoRow("Created", value: mood.createdAt?.formattedMoodDate ?? "—")
-                        infoRow("Updated", value: mood.updatedAt?.formattedMoodDate ?? "—")
-                        infoRow("Device ID", value: mood.deviceId ?? "—")
+                    if !display.media.isEmpty || isEditing {
+                        MoodDetailSection(title: "Media", systemImage: "photo.on.rectangle.angled") {
+                            if draft.media.isEmpty && isEditing {
+                                MoodEmptyStateText("No media attached")
+                            } else if display.media.isEmpty && !isEditing {
+                                MoodEmptyStateText("No media attached")
+                            } else {
+                                LazyVStack(spacing: 12) {
+                                    ForEach(isEditing ? draft.media : display.media) { item in
+                                        MediaItemRow(
+                                            item: item,
+                                            isEditing: isEditing
+                                        ) {
+                                            draft.media.removeAll { $0.id == item.id }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
 
-                    Color.clear
-                        .frame(height: 24)
+                    MoodDetailSection(title: "Details", systemImage: "info.circle.fill") {
+                        VStack(spacing: 12) {
+                            DetailInfoRow(title: "Mood Key", value: display.moodKey)
+                            DetailInfoRow(title: "Mood Value", value: display.moodValueText)
+                            DetailInfoRow(title: "Created", value: display.createdAtText)
+                            DetailInfoRow(title: "Updated", value: display.updatedAtText)
+                            DetailInfoRow(title: "Device", value: display.deviceId)
+                        }
+                    }
+
+                    Color.clear.frame(height: 28)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
@@ -134,12 +130,11 @@ struct MoodDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button(isEditing ? "Done" : "Edit") {
-                    withAnimation(.spring(duration: 0.32)) {
-                        if !isEditing {
-                            beginEditing()
+                    withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+                        if isEditing {
+                            // save placeholder
                         } else {
-                            // Placeholder only for now.
-                            // Later this is where you can save changes.
+                            draft = EditDraft(from: mood)
                         }
                         isEditing.toggle()
                     }
@@ -148,103 +143,334 @@ struct MoodDetailView: View {
             }
         }
         .onAppear {
-            beginEditing()
+            draft = EditDraft(from: mood)
         }
+    }
+
+    private var display: MoodDisplayModel {
+        MoodDisplayModel(mood: mood)
     }
 }
 
-// MARK: - Subviews
+// MARK: - Display Model
 
 @available(iOS 26.0, *)
-private extension MoodDetailView {
-    var headerCard: some View {
+private struct MoodDisplayModel {
+    let mood: AppMoodDetails
+
+    var labels: [String] { mood.labels ?? [] }
+    var contextTags: [String] { mood.contextTags ?? [] }
+    var note: String { mood.note ?? "" }
+    var journalAnswer: String { mood.journalAnswer ?? "" }
+    var visibility: MoodPrivacy? { mood.visibility }
+    var weather: WeatherSnapshot? { mood.weather }
+    var media: [MoodMediaItem] { mood.media ?? [] }
+    var deviceId: String { mood.deviceId ?? "—" }
+
+    var level: MoodLevel {
+        guard let value = mood.moodValue, let level = MoodLevel(rawValue: value) else {
+            return .neutral
+        }
+        return level
+    }
+
+    var title: String {
+        if let key = mood.moodKey, !key.isEmpty {
+            return key.capitalized
+        }
+        if let first = labels.first, !first.isEmpty {
+            return first
+        }
+        return "Mood"
+    }
+
+    var subtitle: String {
+        switch level {
+        case .veryPositive: return "Very positive check-in"
+        case .positive: return "Positive check-in"
+        case .neutral: return "Neutral check-in"
+        case .negative: return "Negative check-in"
+        case .veryNegative: return "Very negative check-in"
+        }
+    }
+
+    var image: Image {
+        if let emojiName = mood.emojiName, !emojiName.isEmpty {
+            return Image(emojiName)
+        }
+        return Image(systemName: "face.smiling")
+    }
+
+    var hasNote: Bool { !note.trimmed.isEmpty }
+    var hasJournal: Bool { !journalAnswer.trimmed.isEmpty }
+
+    var moodKey: String {
+        mood.moodKey?.capitalized ?? "—"
+    }
+
+    var moodValueText: String {
+        mood.moodValue.map(String.init) ?? "—"
+    }
+
+    var createdAtText: String {
+        mood.createdAt.map(AppFormatters.detailDate.string(from:)) ?? "—"
+    }
+
+    var updatedAtText: String {
+        mood.updatedAt.map(AppFormatters.detailDate.string(from:)) ?? "—"
+    }
+
+    var heroDateText: String? {
+        mood.createdAt.map(AppFormatters.detailDate.string(from:))
+    }
+
+    var privacyText: String {
+        visibility?.displayName ?? "None"
+    }
+
+    var privacyIcon: String {
+        
+        visibility?.icon ?? "eye.slash"
+    }
+
+    var mediaCountText: String {
+        "\(media.count)"
+    }
+}
+
+// MARK: - Edit Draft
+
+private struct EditDraft {
+    var contextTags: [String] = []
+    var newContextTag: String = ""
+    var note: String = ""
+    var journalAnswer: String = ""
+    var visibility: MoodPrivacy = .private
+    var media: [MoodMediaItem] = []
+
+    init() {}
+
+    init(from mood: AppMoodDetails) {
+        contextTags = mood.contextTags ?? []
+        note = mood.note ?? ""
+        journalAnswer = mood.journalAnswer ?? ""
+        visibility = mood.visibility ?? .private
+        media = mood.media ?? []
+    }
+}
+
+// MARK: - Hero
+
+@available(iOS 26.0, *)
+private struct MoodHeroCard: View {
+    let display: MoodDisplayModel
+
+    var body: some View {
         VStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(.white.opacity(0.10))
-                    .frame(width: 108, height: 108)
-
-                Circle()
-                    .stroke(.white.opacity(0.14), lineWidth: 1)
-                    .frame(width: 108, height: 108)
-
-                moodImage
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 58, height: 58)
-            }
-            .shadow(color: .black.opacity(0.12), radius: 20, x: 0, y: 10)
-
-            VStack(spacing: 6) {
-                Text(mood.moodKey?.formattedMoodTitle ?? "Mood")
-                    .font(.title2.weight(.bold))
-                    .multilineTextAlignment(.center)
-
-                if let createdAt = mood.createdAt {
-                    Text(createdAt.formattedMoodDate)
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.72))
+            
+            ZStack{
+                
+                HStack() {
+                    Spacer()
+                    VStack {
+                        ZStack {
+                            Circle()
+                                .fill(display.level.color.opacity(0.18))
+                                .frame(width: 30, height: 30)
+                            Image(systemName: display.privacyIcon)
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.white.opacity(0.75))
+                            
+                        }
+                            Spacer()
+                        
+                    }
+                }
+                VStack {
+                    ZStack {
+                        Circle()
+                            .fill(display.level.color.opacity(0.18))
+                            .frame(width: 112, height: 112)
+                        
+                        Circle()
+                            .stroke(.white.opacity(0.14), lineWidth: 1)
+                            .frame(width: 112, height: 112)
+                        
+                        display.image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 60, height: 60)
+                    }
+                    .shadow(color: display.level.color.opacity(0.18), radius: 24, x: 0, y: 10)
+                    
+                    VStack(spacing: 6) {
+                        Text(display.title)
+                            .font(.title2.weight(.bold))
+                            .multilineTextAlignment(.center)
+                        
+                        
+                        if let heroDateText = display.heroDateText {
+                            Text(heroDateText)
+                                .font(.caption)
+                                .foregroundStyle(.white.opacity(0.58))
+                        }
+                    }
                 }
             }
+            
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
         .padding(.horizontal, 18)
-        .background(premiumCardBackground)
+        .background(MoodCardBackground())
     }
+}
 
-    var moodImage: Image {
-        if let emojiName = mood.emojiName, !emojiName.isEmpty {
-            return Image(emojiName)
-        } else {
-            return Image(systemName: "face.smiling.inverse")
+// MARK: - Quick Stats
+
+@available(iOS 26.0, *)
+private struct MoodQuickStatsRow: View {
+    let display: MoodDisplayModel
+
+    var body: some View {
+        HStack(spacing: 12) {
+            StatPill(
+                title: "Level",
+                value: display.level.sectionTitle,
+                systemImage: "circle.fill"
+            )
+
+            StatPill(
+                title: "Privacy",
+                value: display.privacyText,
+                systemImage: display.privacyIcon
+            )
+
+            StatPill(
+                title: "Media",
+                value: display.mediaCountText,
+                systemImage: "photo"
+            )
         }
     }
+}
 
-    var premiumCardBackground: some View {
-        RoundedRectangle(cornerRadius: 30, style: .continuous)
+// MARK: - Section Wrapper
+
+@available(iOS 26.0, *)
+private struct MoodDetailSection<Content: View>: View {
+    let title: String
+    let systemImage: String
+    @ViewBuilder let content: Content
+
+    init(title: String, systemImage: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.systemImage = systemImage
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 10) {
+                Image(systemName: systemImage)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.78))
+
+                Text(title)
+                    .font(.headline.weight(.semibold))
+            }
+            .padding(.horizontal, 2)
+
+            VStack(alignment: .leading, spacing: 14) {
+                content
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(MoodCardBackground())
+        }
+    }
+}
+
+// MARK: - Card Background
+
+private struct MoodCardBackground: View {
+    var body: some View {
+        RoundedRectangle(cornerRadius: 28, style: .continuous)
             .fill(.ultraThinMaterial)
             .overlay(
-                RoundedRectangle(cornerRadius: 30, style: .continuous)
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
                     .stroke(.white.opacity(0.14), lineWidth: 1)
             )
             .shadow(color: .black.opacity(0.14), radius: 24, x: 0, y: 14)
     }
+}
 
-    func detailsSection<Content: View>(
-        title: String,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text(title)
-                .font(.headline.weight(.semibold))
-                .padding(.horizontal, 2)
+// MARK: - Reusable Small Views
 
-            VStack(alignment: .leading, spacing: 14) {
-                content()
+private struct StatPill: View {
+    let title: String
+    let value: String
+    let systemImage: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: systemImage)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.white.opacity(0.75))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption2)
+                    .foregroundStyle(.white.opacity(0.55))
+
+                Text(value)
+                    .font(.caption.weight(.semibold))
+                    .lineLimit(1)
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(premiumCardBackground)
-        }
-    }
 
-    func infoRow(_ title: String, value: String) -> some View {
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(.white.opacity(0.10), lineWidth: 1)
+        )
+    }
+}
+
+private struct DetailInfoRow: View {
+    let title: String
+    let value: String
+
+    var body: some View {
         HStack(alignment: .top, spacing: 14) {
             Text(title)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.white.opacity(0.72))
-                .frame(width: 90, alignment: .leading)
+                .foregroundStyle(.white.opacity(0.65))
+                .frame(width: 88, alignment: .leading)
 
             Text(value)
                 .font(.subheadline)
-                .foregroundStyle(.white)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .textSelection(.enabled)
         }
     }
+}
 
-    func textBlock(_ text: String) -> some View {
+private struct MoodBodyText: View {
+    let text: String
+
+    init(_ text: String) {
+        self.text = text
+    }
+
+    var body: some View {
         Text(text)
             .font(.subheadline)
             .foregroundStyle(.white.opacity(0.95))
@@ -259,36 +485,27 @@ private extension MoodDetailView {
                     .stroke(.white.opacity(0.08), lineWidth: 1)
             )
     }
+}
 
-    func premiumTextField(
-        title: String,
-        text: Binding<String>,
-        placeholder: String
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.white.opacity(0.68))
+private struct MoodEmptyStateText: View {
+    let text: String
 
-            TextField(placeholder, text: text)
-                .textInputAutocapitalization(.sentences)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(.white.opacity(0.07))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(.white.opacity(0.10), lineWidth: 1)
-                )
-        }
+    init(_ text: String) {
+        self.text = text
     }
 
-    func premiumTextEditor(
-        text: Binding<String>,
-        placeholder: String
-    ) -> some View {
+    var body: some View {
+        Text(text)
+            .font(.subheadline)
+            .foregroundStyle(.white.opacity(0.55))
+    }
+}
+
+private struct PremiumTextEditor: View {
+    @Binding var text: String
+    let placeholder: String
+
+    var body: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(.white.opacity(0.07))
@@ -296,14 +513,15 @@ private extension MoodDetailView {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(.white.opacity(0.10), lineWidth: 1)
 
-            if text.wrappedValue.isEmpty {
+            if text.isEmpty {
                 Text(placeholder)
+                    .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.38))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 14)
             }
 
-            TextEditor(text: text)
+            TextEditor(text: $text)
                 .scrollContentBackground(.hidden)
                 .background(.clear)
                 .padding(.horizontal, 10)
@@ -311,114 +529,225 @@ private extension MoodDetailView {
                 .frame(minHeight: 130)
         }
     }
+}
 
-    func editableChipSection(
-        items: Binding<[String]>,
-        fallbackItems: [String],
-        placeholder: String,
-        isEditing: Bool
-    ) -> some View {
+// MARK: - Context Tags
+
+private struct EditableContextTagsSection: View {
+    @Binding var draft: EditDraft
+
+    var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            let displayItems = isEditing ? items.wrappedValue : fallbackItems
-
-            if displayItems.isEmpty {
-                Text(isEditing ? "No items yet" : "—")
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.6))
+            if draft.contextTags.isEmpty {
+                MoodEmptyStateText("No context tags yet")
             } else {
-                FlexibleTagWrap(tags: displayItems)
+                MoodTagCloud(tags: draft.contextTags)
             }
 
-            if isEditing {
+            HStack(spacing: 10) {
+                TextField("Add a context tag", text: $draft.newContextTag)
+                    .textInputAutocapitalization(.words)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(.white.opacity(0.07))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(.white.opacity(0.10), lineWidth: 1)
+                    )
+
                 Button {
-                    items.wrappedValue.append(placeholder)
+                    let trimmed = draft.newContextTag.trimmed
+                    guard !trimmed.isEmpty else { return }
+                    draft.contextTags.append(trimmed)
+                    draft.newContextTag = ""
                 } label: {
-                    Label("Add", systemImage: "plus")
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .background(.white.opacity(0.08), in: Capsule())
+                    Image(systemName: "plus")
+                        .font(.headline.weight(.bold))
+                        .frame(width: 42, height: 42)
+                        .background(.white.opacity(0.10), in: Circle())
                 }
                 .buttonStyle(.plain)
             }
         }
     }
+}
 
-    func weatherSection(_ weather: WeatherSnapshot) -> some View {
-        detailsSection(title: "Weather") {
-            VStack(spacing: 12) {
-                infoRow("Condition", value: weather.conditionText ?? "—")
-                infoRow("Temperature", value: weather.temperatureDisplay ?? "—")
-                infoRow("Location", value: weather.locationName ?? "—")
-            }
+private struct MoodOptionalTagContent: View {
+    let tags: [String]
+
+    var body: some View {
+        if tags.isEmpty {
+            MoodEmptyStateText("No context tags")
+        } else {
+            MoodTagCloud(tags: tags)
         }
-    }
-
-    func mediaSection(_ media: [MoodMediaItem]) -> some View {
-        detailsSection(title: "Media") {
-            VStack(spacing: 12) {
-                ForEach(Array(media.indices), id: \.self) { index in
-                    HStack(spacing: 12) {
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(.white.opacity(0.08))
-                            .frame(width: 54, height: 54)
-                            .overlay {
-                                Image(systemName: "photo.on.rectangle.angled")
-                                    .font(.title3)
-                                    .foregroundStyle(.white.opacity(0.72))
-                            }
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Media Item \(index + 1)")
-                                .font(.subheadline.weight(.semibold))
-
-                            Text("Placeholder preview")
-                                .font(.caption)
-                                .foregroundStyle(.white.opacity(0.65))
-                        }
-
-                        Spacer()
-
-                        if isEditing {
-                            Button("Edit") {
-                                // Placeholder
-                            }
-                            .font(.caption.weight(.semibold))
-                        }
-                    }
-                    .padding(12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(.white.opacity(0.05))
-                    )
-                }
-            }
-        }
-    }
-
-    var currentLabels: [String] {
-        mood.labels ?? []
-    }
-
-    var currentContextTags: [String] {
-        mood.contextTags ?? []
-    }
-
-    func beginEditing() {
-        editedMoodKey = mood.moodKey ?? ""
-        editedMoodValue = mood.moodValue.map(String.init) ?? ""
-        editedNote = mood.note ?? ""
-        editedJournalAnswer = mood.journalAnswer ?? ""
-        editedLabels = mood.labels ?? []
-        editedContextTags = mood.contextTags ?? []
     }
 }
 
-// MARK: - Flexible Tags
+// MARK: - Visibility
 
-@available(iOS 26.0, *)
-private struct FlexibleTagWrap: View {
+private struct VisibilityDisplayRow: View {
+    let visibility: MoodPrivacy
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: visibility.icon)
+                .font(.subheadline.weight(.semibold))
+                .frame(width: 26, height: 26)
+                .background(.white.opacity(0.08), in: Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(visibility.displayName)
+                    .font(.subheadline.weight(.semibold))
+
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.6))
+            }
+
+            Spacer()
+        }
+    }
+
+    private var description: String {
+        switch visibility {
+        case .private:
+            return "Only you can see this mood"
+        case .friends:
+            return "Visible to approved friends"
+        case .public:
+            return "Visible to anyone"
+        }
+    }
+}
+
+private struct VisibilityEditor: View {
+    @Binding var selection: MoodPrivacy
+
+    var body: some View {
+        VStack(spacing: 10) {
+            ForEach(MoodPrivacy.allCases) { option in
+                Button {
+                    selection = option
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: option.icon)
+                            .frame(width: 22)
+
+                        Text(option.displayName)
+                            .font(.subheadline.weight(.medium))
+
+                        Spacer()
+
+                        if selection == option {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.white)
+                        }
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(selection == option ? .white.opacity(0.12) : .white.opacity(0.05))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .stroke(.white.opacity(0.10), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+}
+
+// MARK: - Weather
+
+private struct WeatherDetailContent: View {
+    let weather: WeatherSnapshot
+
+    var body: some View {
+        VStack(spacing: 12) {
+            DetailInfoRow(
+                title: "Temperature",
+                value: "\(Int(weather.temperatureC.rounded()))°C"
+            )
+            DetailInfoRow(
+                title: "Condition",
+                value: weather.conditionCode
+            )
+            DetailInfoRow(
+                title: "Recorded",
+                value: AppFormatters.detailDate.string(from: weather.recordedAt)
+            )
+        }
+    }
+}
+
+// MARK: - Media
+
+private struct MediaItemRow: View {
+    let item: MoodMediaItem
+    let isEditing: Bool
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(.white.opacity(0.08))
+                .frame(width: 56, height: 56)
+                .overlay {
+                    Image(systemName: item.type == .photo ? "photo.fill" : "video.fill")
+                        .font(.title3)
+                        .foregroundStyle(.white.opacity(0.75))
+                }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(item.type == .photo ? "Photo" : "Video")
+                    .font(.subheadline.weight(.semibold))
+
+                Text(item.url)
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.62))
+                    .lineLimit(1)
+
+                Text(AppFormatters.detailDate.string(from: item.createdAt))
+                    .font(.caption2)
+                    .foregroundStyle(.white.opacity(0.48))
+            }
+
+            Spacer()
+
+            if isEditing {
+                Button(role: .destructive, action: onDelete) {
+                    Image(systemName: "trash")
+                        .font(.subheadline.weight(.semibold))
+                        .padding(10)
+                        .background(.white.opacity(0.08), in: Circle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(.white.opacity(0.05))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(.white.opacity(0.08), lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - Tag Cloud
+
+private struct MoodTagCloud: View {
     let tags: [String]
+    var tint: Color = .white.opacity(0.08)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -429,13 +758,12 @@ private struct FlexibleTagWrap: View {
                             .font(.caption.weight(.semibold))
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
-                            .background(.white.opacity(0.08), in: Capsule())
+                            .background(tint, in: Capsule())
                             .overlay(
                                 Capsule()
                                     .stroke(.white.opacity(0.10), lineWidth: 1)
                             )
                     }
-
                     Spacer(minLength: 0)
                 }
             }
@@ -443,52 +771,29 @@ private struct FlexibleTagWrap: View {
     }
 
     private var chunkedTags: [[String]] {
-        var rows: [[String]] = []
-        var currentRow: [String] = []
-
-        for tag in tags {
-            if currentRow.count >= 3 {
-                rows.append(currentRow)
-                currentRow = [tag]
-            } else {
-                currentRow.append(tag)
-            }
+        stride(from: 0, to: tags.count, by: 3).map {
+            Array(tags[$0..<min($0 + 3, tags.count)])
         }
-
-        if !currentRow.isEmpty {
-            rows.append(currentRow)
-        }
-
-        return rows
     }
 }
 
-// MARK: - Formatting Helpers
+// MARK: - Formatters
 
-private extension String {
-    var formattedMoodTitle: String {
-        replacingOccurrences(of: "_", with: " ")
-            .split(separator: " ")
-            .map { $0.capitalized }
-            .joined(separator: " ")
-    }
-}
-
-private extension Date {
-    var formattedMoodDate: String {
+private enum AppFormatters {
+    static let detailDate: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
-        return formatter.string(from: self)
-    }
+        return formatter
+    }()
 }
 
-// MARK: - Placeholder Helpers For Unknown Models
+// MARK: - Helpers
 
-extension WeatherSnapshot {
-    var conditionText: String? { nil }
-    var temperatureDisplay: String? { nil }
-    var locationName: String? { nil }
+private extension String {
+    var trimmed: String {
+        trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }
 
 // MARK: - Preview
@@ -498,19 +803,26 @@ extension WeatherSnapshot {
     NavigationStack {
         MoodDetailView(
             mood: AppMoodDetails(
-                moodValue: 8,
-                moodKey: "peaceful",
-                emojiName: "calmMood",
-                labels: ["Calm", "Grounded", "Open"],
-                contextTags: ["Home", "Music", "Evening"],
-                note: "I felt really centered tonight after taking some quiet time for myself and listening to music.",
-                journalAnswer: "What helped most was slowing down and letting myself be present instead of rushing into the next thing.",
-                visibility: nil,
-                media: [],
-                weather: nil,
-                createdAt: .now.addingTimeInterval(-3600 * 6),
+                moodValue: 4,
+                moodKey: "happy",
+                emojiName: "Happy",
+                labels: ["Happy"],
+                contextTags: ["Music", "Friends", "Travel"],
+                note: "I felt really light and energized after getting outside and listening to music.",
+                journalAnswer: "Today reminded me that my mood shifts quickly when I give myself room to enjoy the moment.",
+                visibility: .private,
+                media: [
+                    MoodMediaItem(type: .photo, url: "https://example.com/photo1.jpg"),
+                    MoodMediaItem(type: .video, url: "https://example.com/video1.mp4")
+                ],
+                weather: WeatherSnapshot(
+                    recordedAt: .now.addingTimeInterval(-1800),
+                    temperatureC: 18.4,
+                    conditionCode: "stars.fill"
+                ),
+                createdAt: .now.addingTimeInterval(-7200),
                 updatedAt: .now.addingTimeInterval(-1800),
-                deviceId: "iPhone Placeholder"
+                deviceId: "iPhone"
             )
         )
     }
