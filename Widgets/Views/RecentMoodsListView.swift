@@ -4,7 +4,6 @@
 //
 //  Created by Rosie on 3/8/26.
 //
-
 //
 //  RecentMoodsListView.swift
 //  Widgets
@@ -19,14 +18,16 @@ import HealthKit
 struct RecentMoodsListView: View {
     @EnvironmentObject var moodStore: HealthKitMoodStore
 
-    @State private var moods: [HKStateOfMind] = []
+    @State private var moods: [UnifiedMoodEntry] = []
     @State private var isLoading = false
     @State private var showError = false
     @State private var errorMessage: String?
 
     @State private var isSelectionMode = false
-    @State private var selectedMoodIDs: Set<UUID> = []
+    @State private var selectedMoodIDs: Set<String> = []
     @State private var isDeletingSelection = false
+
+    private let firestoreService = MoodFirestoreService()
 
     var body: some View {
         ZStack {
@@ -81,11 +82,11 @@ struct RecentMoodsListView: View {
                     headerCard
 
                     LazyVStack(spacing: 14) {
-                        ForEach(moods, id: \.uuid) { mood in
+                        ForEach(moods) { mood in
                             PremiumMoodRow(
                                 mood: mood,
                                 isSelectionMode: isSelectionMode,
-                                isSelected: selectedMoodIDs.contains(mood.uuid)
+                                isSelected: selectedMoodIDs.contains(mood.id)
                             ) {
                                 handleTap(on: mood)
                             } deleteAction: {
@@ -221,14 +222,14 @@ struct RecentMoodsListView: View {
             )
     }
 
-    private func handleTap(on mood: HKStateOfMind) {
+    private func handleTap(on mood: UnifiedMoodEntry) {
         guard isSelectionMode else { return }
 
         withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) {
-            if selectedMoodIDs.contains(mood.uuid) {
-                selectedMoodIDs.remove(mood.uuid)
+            if selectedMoodIDs.contains(mood.id) {
+                selectedMoodIDs.remove(mood.id)
             } else {
-                selectedMoodIDs.insert(mood.uuid)
+                selectedMoodIDs.insert(mood.id)
             }
         }
     }
@@ -244,7 +245,8 @@ struct RecentMoodsListView: View {
         defer { isLoading = false }
 
         do {
-            moods = try await moodStore.fetchRecentMoods(limit: 50)
+            let unifiedService = UnifiedMoodService(healthKitStore: moodStore)
+            moods = try await unifiedService.fetchRecentMoods(limit: 50)
         } catch {
             errorMessage = error.localizedDescription
             showError = true
@@ -253,17 +255,16 @@ struct RecentMoodsListView: View {
 
     private func deleteSelected() {
         let idsToDelete = selectedMoodIDs
-        let moodsToDelete = moods.filter { idsToDelete.contains($0.uuid) }
+        let moodsToDelete = moods.filter { idsToDelete.contains($0.id) }
 
         Task {
             do {
                 for mood in moodsToDelete {
-                    try await moodStore.deleteMood(mood)
+                    try await deleteMoodEntry(mood)
                 }
 
-                moods.removeAll { idsToDelete.contains($0.uuid) }
-
                 await MainActor.run {
+                    moods.removeAll { idsToDelete.contains($0.id) }
                     exitSelectionMode()
                 }
             } catch {
@@ -275,23 +276,38 @@ struct RecentMoodsListView: View {
         }
     }
 
-    private func delete(mood: HKStateOfMind) {
+    private func delete(mood: UnifiedMoodEntry) {
         Task {
             do {
-                try await moodStore.deleteMood(mood)
-                moods.removeAll { $0.uuid == mood.uuid }
-                selectedMoodIDs.remove(mood.uuid)
+                try await deleteMoodEntry(mood)
+
+                await MainActor.run {
+                    moods.removeAll { $0.id == mood.id }
+                    selectedMoodIDs.remove(mood.id)
+                }
             } catch {
-                errorMessage = error.localizedDescription
-                showError = true
+                await MainActor.run {
+                    errorMessage = error.localizedDescription
+                    showError = true
+                }
             }
+        }
+    }
+
+    private func deleteMoodEntry(_ mood: UnifiedMoodEntry) async throws {
+        if let hkSample = mood.hkSample {
+            try await moodStore.deleteMood(hkSample)
+        }
+
+        if let firestoreMood = mood.firestore {
+            try await firestoreService.deleteMoodEntry(moodId: firestoreMood.id)
         }
     }
 }
 
 @available(iOS 26.0, *)
 private struct PremiumMoodRow: View {
-    let mood: HKStateOfMind
+    let mood: UnifiedMoodEntry
     let isSelectionMode: Bool
     let isSelected: Bool
     let tapAction: () -> Void

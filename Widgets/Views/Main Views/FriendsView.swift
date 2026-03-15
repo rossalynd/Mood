@@ -15,7 +15,7 @@ struct FriendsView: View {
             
                 
                 
-                FriendsListView()
+            FriendsListView(path: $path)
                 
         }
         .navigationBarHidden(true)

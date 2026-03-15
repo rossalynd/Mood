@@ -14,7 +14,6 @@ import WidgetKit
 struct AddMoodView: View {
     @EnvironmentObject private var moodStore: HealthKitMoodStore
     @EnvironmentObject var auth: AuthService
-    @EnvironmentObject var firestoreMoodStore: MoodFirestoreService
     @Environment(\.dismiss) private var dismiss
 
     @StateObject private var viewModel = AddMoodViewModel()

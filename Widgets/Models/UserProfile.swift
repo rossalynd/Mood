@@ -5,6 +5,12 @@
 //  Created by Rosie on 3/8/26.
 //
 
+//
+//  UserProfile.swift
+//  Widgets
+//
+//  Created by Rosie on 3/8/26.
+//
 
 import Foundation
 import FirebaseFirestore
@@ -24,6 +30,11 @@ struct UserProfile {
     let updatedAt: Date
     let allowsFriendRequests: Bool
     let isDiscoverable: Bool
+
+    // Mood stats
+    let streakCount: Int
+    let totalMoodCount: Int
+    let lastMoodDate: Date?
 }
 
 extension UserProfile {
@@ -51,6 +62,14 @@ extension UserProfile {
         self.updatedAt = updatedAtTimestamp.dateValue()
         self.allowsFriendRequests = data["allowsFriendRequests"] as? Bool ?? true
         self.isDiscoverable = data["isDiscoverable"] as? Bool ?? true
+        self.streakCount = data["streakCount"] as? Int ?? 0
+        self.totalMoodCount = data["totalMoodCount"] as? Int ?? 0
+
+        if let lastMoodTimestamp = data["lastMoodDate"] as? Timestamp {
+            self.lastMoodDate = lastMoodTimestamp.dateValue()
+        } else {
+            self.lastMoodDate = nil
+        }
 
         if let reminderTimestamps = data["reminderTimes"] as? [Timestamp] {
             self.reminderTimes = reminderTimestamps.map { $0.dateValue() }
@@ -73,7 +92,10 @@ extension UserProfile {
             "createdAt": Timestamp(date: createdAt),
             "updatedAt": Timestamp(date: updatedAt),
             "allowsFriendRequests": allowsFriendRequests,
-            "isDiscoverable": isDiscoverable
+            "isDiscoverable": isDiscoverable,
+            "streakCount": streakCount,
+            "totalMoodCount": totalMoodCount,
+            "lastMoodDate": lastMoodDate.map { Timestamp(date: $0) } as Any
         ]
     }
 }
@@ -88,6 +110,9 @@ struct PublicUserProfile {
     let createdAt: Date
     let updatedAt: Date
     let isDiscoverable: Bool
+
+    // Shared mood stat
+    let streakCount: Int
 }
 
 extension PublicUserProfile {
@@ -110,6 +135,7 @@ extension PublicUserProfile {
         self.createdAt = createdAtTimestamp.dateValue()
         self.updatedAt = updatedAtTimestamp.dateValue()
         self.isDiscoverable = data["isDiscoverable"] as? Bool ?? true
+        self.streakCount = data["streakCount"] as? Int ?? 0
     }
 
     func firestoreData() -> [String: Any] {
@@ -121,7 +147,8 @@ extension PublicUserProfile {
             "emotionSymbol": emotionSymbol as Any,
             "createdAt": Timestamp(date: createdAt),
             "updatedAt": Timestamp(date: updatedAt),
-            "isDiscoverable": isDiscoverable
+            "isDiscoverable": isDiscoverable,
+            "streakCount": streakCount
         ]
     }
 }

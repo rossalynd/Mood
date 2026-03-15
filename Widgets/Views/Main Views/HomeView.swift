@@ -8,6 +8,7 @@ struct HomeView: View {
     @Binding var selectedTab: MoodTab
     @EnvironmentObject var moodStore: HealthKitMoodStore
     @EnvironmentObject var router: DeepLinkRouter
+    @State private var firestoreService = MoodFirestoreService()
 
     
     @State private var moods: [HKStateOfMind] = []
@@ -598,7 +599,6 @@ struct HomeView: View {
                 }
             }
     
-    
     @MainActor
     private func quickLog(_ mood: MoodItem) async {
         isLoading = true
@@ -606,15 +606,18 @@ struct HomeView: View {
 
         do {
             let moodID = "mood_\(UUID().uuidString.lowercased())"
+            let now = Date()
 
             let metadata: [String: Any] = [
                 HKMetadataKeySyncIdentifier: moodID,
                 HKMetadataKeySyncVersion: 1,
                 MoodMetadataKeys.appMoodID: moodID,
                 MoodMetadataKeys.deviceId: DeviceID.current()
-                ]
-            
+            ]
+
             try await moodStore.requestAuth()
+
+            // Save to HealthKit
             try await moodStore.saveMood(
                 valence: mood.label.defaultValence,
                 kind: .momentaryEmotion,
@@ -622,9 +625,30 @@ struct HomeView: View {
                 metadata: metadata
             )
 
+            // Save to Firestore privately for now
+            let details = AppMoodDetails(
+                moodValue: mood.label.level.rawValue,
+                moodKey: mood.displayName.lowercased(),
+                emojiName: mood.displayName,
+                labels: [mood.displayName],
+                contextTags: [],
+                note: nil,
+                journalAnswer: nil,
+                visibility: .private,
+                media: [],
+                weather: nil,
+                createdAt: now,
+                deviceId: DeviceID.current()
+            )
+
+            _ = try await firestoreService.saveMoodEntry(
+                selectedLabel: mood.label,
+                details: details
+            )
+
             SharedMoodCache.writeLatest(
                 assetName: mood.displayName,
-                date: Date(),
+                date: now,
                 color: mood.level.color
             )
 
@@ -636,6 +660,9 @@ struct HomeView: View {
             print("Quick log failed:", error)
         }
     }
+    
+    
+    
 }
 
 

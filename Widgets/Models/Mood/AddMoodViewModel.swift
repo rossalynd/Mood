@@ -16,9 +16,19 @@ import WeatherKit
 @MainActor
 final class AddMoodViewModel: ObservableObject {
     // MARK: - Services
-    private let weatherService = AppWeatherService()
-    private let locationManager = SimpleLocationManager()
-    private let moodService = MoodFirestoreService()
+    private let weatherService: AppWeatherService
+    private let locationManager: SimpleLocationManager
+    private let moodService: MoodFirestoreService
+    
+    init(
+        weatherService: AppWeatherService = AppWeatherService(),
+        locationManager: SimpleLocationManager = SimpleLocationManager(),
+        moodService: MoodFirestoreService = MoodFirestoreService()
+    ) {
+        self.weatherService = weatherService
+        self.locationManager = locationManager
+        self.moodService = moodService
+    }
 
     // MARK: - Core Mood
     @Published var selectedLabel: HKStateOfMind.Label?

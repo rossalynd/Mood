@@ -61,7 +61,7 @@ struct FriendSearchView: View {
             } else {
                 List(viewModel.results, id: \.uid) { user in
                     HStack(spacing: 12) {
-                        Image(systemName: "person.crop.circle.fill")
+                        Image(systemName: user.emotionSymbol ?? "person.crop.circle.fill")
                             .font(.title3)
                             .foregroundStyle(.secondary)
 

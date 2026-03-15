@@ -29,7 +29,8 @@ final class FriendsListViewModel: ObservableObject {
         guard
             let data = profile.data(),
             let username = data["username"] as? String,
-            let displayName = data["displayName"] as? String
+            let displayName = data["displayName"] as? String,
+            let emotionSymbol = data["emotionSymbol"] as? String
         else {
             return nil
         }
@@ -38,7 +39,8 @@ final class FriendsListViewModel: ObservableObject {
             id: friendUID,
             uid: friendUID,
             username: username,
-            displayName: displayName
+            displayName: displayName,
+            emotionSymbol: emotionSymbol
         )
     }
 

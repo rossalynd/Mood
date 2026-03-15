@@ -8,8 +8,7 @@
 import Foundation
 import SwiftUI
 
-
-// MARK: - Home Routes (push full-screen inside the same NavigationStack)
+// MARK: - Home Routes
 enum HomeRoute: Hashable {
     case logMood
     case settings
@@ -19,10 +18,10 @@ enum HomeRoute: Hashable {
     case friends
     case breathing
     case pendingFriends
+    case friendProfile(uid: String)
 }
 
-
-// MARK: - App Tabs (custom glass tab bar)
+// MARK: - App Tabs
 enum MoodTab: Hashable, CaseIterable {
     case home, insights, friends, profile
 
@@ -45,7 +44,6 @@ enum MoodTab: Hashable, CaseIterable {
     }
 }
 
-// MARK: - Root Shell (NavigationStack + custom glass tab bar)
 @available(iOS 26.0, *)
 struct RootShellView: View {
     @State private var path = NavigationPath()
@@ -56,8 +54,6 @@ struct RootShellView: View {
         ZStack {
             NavigationStack(path: $path) {
                 ZStack(alignment: .bottom) {
-                    
-                    // The currently selected tab content
                     tabContent
                         .padding(.top, 50)
                         .overlay(alignment: .bottom) {
@@ -71,106 +67,86 @@ struct RootShellView: View {
                             )
                             .frame(maxWidth: .infinity, maxHeight: 30)
                         }
-                    
-                    HStack() {
-                      
+
+                    HStack {
                         GlassTabBar(selected: $selectedTab) { tab in
-                            
                             if tab == selectedTab {
-                                
                                 if !path.isEmpty { path.removeLast(path.count) }
                             } else {
                                 selectedTab = tab
                             }
                         }
-                        
-                        
+
                         Button {
                             if !path.isEmpty {
-                                    path.removeLast(path.count)
-                                } else {
-                                    path.append(HomeRoute.logMood)
-                                }
+                                path.removeLast(path.count)
+                            } else {
+                                path.append(HomeRoute.logMood)
+                            }
                         } label: {
-                            
-                                Image(systemName: "plus")
+                            Image(systemName: "plus")
                                 .font(.system(size: 30, weight: .medium))
-                            
-                                    .foregroundStyle(.primary.opacity(0.5))
-                                    .frame(width: 54, height: 54)
-                                    .background(
-                                        .thinMaterial,
-                                        in: RoundedRectangle(cornerRadius: 40, style: .continuous)
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 30, style: .continuous)
-                                            .stroke(.white.opacity(0.15), lineWidth: 1)
-                                    )
-                                    .animation(.easeInOut(duration: 0.3), value: showAddMood)
-                                    .glassEffect(.clear)
-                                    
-                                    
-                                    
-                                
+                                .foregroundStyle(.primary.opacity(0.5))
+                                .frame(width: 54, height: 54)
+                                .background(
+                                    .thinMaterial,
+                                    in: RoundedRectangle(cornerRadius: 40, style: .continuous)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                                        .stroke(.white.opacity(0.15), lineWidth: 1)
+                                )
+                                .animation(.easeInOut(duration: 0.3), value: showAddMood)
+                                .glassEffect(.clear)
                         }
-                       
                         .buttonStyle(.plain)
-                        
-                        
-                            
-                            
                     }
                     .padding(.horizontal, 10)
                     .padding(.bottom, 26)
                     .shadow(radius: 10)
-                    
                     .ignoresSafeArea()
-                    
-                    
                 }
-                
                 .ignoresSafeArea()
-                
                 .navigationDestination(for: HomeRoute.self) { route in
                     switch route {
                     case .logMood:
                         AddMoodView()
+
                     case .settings:
                         SettingsView()
-                           
+
                     case .profile:
                         ProfileView(path: $path)
+
                     case .insights:
                         InsightsView(path: $path)
+
                     case .friends:
                         FriendsView(path: $path)
+
                     case .breathing:
                         BreathingView(path: $path)
+
                     case .recentMoods:
                         RecentMoodsListView()
+
                     case .pendingFriends:
                         PendingRequestsView()
-                    
-                    
+
+                    case .friendProfile(let uid):
+                        FriendProfileView(friendUID: uid)
                     }
                 }
                 .onOpenURL { url in
                     guard url.scheme == "moodwidget" else { return }
 
-                    // moodwidget://addMood
                     if url.host == "addMood" {
-                        // optional: clear to root first so it always works predictably
                         path = NavigationPath()
                         path.append(HomeRoute.logMood)
                     }
                 }
             }
-            
-            
         }
-        
-        
-        
     }
 
     @ViewBuilder
@@ -186,10 +162,7 @@ struct RootShellView: View {
             ProfileView(path: $path)
         }
     }
-    
-    
 }
-
 
 @available(iOS 26.0, *)
 #Preview {
@@ -197,5 +170,4 @@ struct RootShellView: View {
         .environmentObject(HealthKitMoodStore())
         .environmentObject(DeepLinkRouter())
         .environmentObject(AuthService())
-    
 }

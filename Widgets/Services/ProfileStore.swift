@@ -5,6 +5,12 @@
 //  Created by Rosie on 3/9/26.
 //
 
+//
+//  ProfileStore.swift
+//  Widgets
+//
+//  Created by Rosie on 3/9/26.
+//
 
 import Foundation
 @preconcurrency import FirebaseFirestore
@@ -188,7 +194,10 @@ final class ProfileStore: ObservableObject {
             createdAt: createdAt,
             updatedAt: now,
             allowsFriendRequests: allowsFriendRequests,
-            isDiscoverable: isDiscoverable
+            isDiscoverable: isDiscoverable,
+            streakCount: existingProfile?.streakCount ?? 0,
+            totalMoodCount: existingProfile?.totalMoodCount ?? 0,
+            lastMoodDate: existingProfile?.lastMoodDate
         )
 
         let sharedProfile = PublicUserProfile(
@@ -199,7 +208,8 @@ final class ProfileStore: ObservableObject {
             emotionSymbol: data.emotionSymbol,
             createdAt: createdAt,
             updatedAt: now,
-            isDiscoverable: isDiscoverable
+            isDiscoverable: isDiscoverable,
+            streakCount: existingProfile?.streakCount ?? 0
         )
 
         let batch = db.batch()
@@ -286,7 +296,10 @@ final class ProfileStore: ObservableObject {
             createdAt: current.createdAt,
             updatedAt: now,
             allowsFriendRequests: nextAllowsFriendRequests,
-            isDiscoverable: nextIsDiscoverable
+            isDiscoverable: nextIsDiscoverable,
+            streakCount: current.streakCount,
+            totalMoodCount: current.totalMoodCount,
+            lastMoodDate: current.lastMoodDate
         )
 
         let updatedPublicProfile = PublicUserProfile(
@@ -297,7 +310,8 @@ final class ProfileStore: ObservableObject {
             emotionSymbol: nextEmotionSymbol,
             createdAt: current.createdAt,
             updatedAt: now,
-            isDiscoverable: nextIsDiscoverable
+            isDiscoverable: nextIsDiscoverable,
+            streakCount: current.streakCount
         )
 
         let batch = db.batch()

@@ -32,3 +32,4 @@ struct UnifiedMoodEntry: Identifiable, Hashable {
         hasher.combine(id)
     }
 }
+

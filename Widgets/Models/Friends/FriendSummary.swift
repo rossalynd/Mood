@@ -13,4 +13,5 @@ struct FriendSummary: Identifiable, Hashable {
     let uid: String
     let username: String
     let displayName: String
+    let emotionSymbol: String
 }
